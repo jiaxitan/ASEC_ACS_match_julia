@@ -17,6 +17,7 @@ using Plots, Plots.PlotMeasures, StatsPlots; gr()
 using GLM, PrettyTables, FixedEffectModels, RegressionTables, CategoricalArrays
 using TableView
 using NearestNeighbors
+using HTTP
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_ASEC_selection_sampleB.jl")
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_ASEC_inc_earned_person.jl")
@@ -128,6 +129,7 @@ include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_ju
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_MARST_recode.jl")
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_PROPTX99_recode.jl")
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_COUNTY_2005_onwards_recode.jl")
+include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
 df_ACS = CSV.read("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00005.csv", DataFrame);
@@ -147,6 +149,16 @@ df_ACS_sample0 = ACS_ASEC_selection_sampleB(df_ACS);
 
 # Add state info
 df_ACS_sample = innerjoin(df_ACS_sample0, df_state_info, on = :STATEFIPS);
+sort!(df_ACS_sample, [:YEAR, :STATEFIPS, :PUMA]);
+ACS_match_PUMA_county!(df_ACS_sample);
+
+sum(df_ACS_sample.COUNTYFIPS .== 0)/nrow(df_ACS_sample)
+sum(df_ACS_sample.COUNTYFIPS2 .== 0)/nrow(df_ACS_sample)
+
+compare_county = combine(groupby(df_ACS_sample, :STATEFIPS), :COUNTYFIPS => (c -> (sum(c .== 0)/length(c))), :COUNTYFIPS2 => (c -> (sum(c .== 0)/length(c))));
+rename!(compare_county, :COUNTYFIPS_function => :Original, :COUNTYFIPS2_function => :After_matching);
+insertcols!(compare_county, size(compare_county,2)+1, :STATENAME => df_state_info.STATENAME);
+CSV.write(dir_out * "compare_county_matching.csv", compare_county);
 
 # Recode EDUC, RACE, MARST, COUNTY Names
 ACS_EDUC_recode!(df_ACS_sample);
@@ -236,8 +248,11 @@ df_ASEC_hh_match_state = filter(r -> (r[:county] .== 0), df_ASEC_hh_match);  # S
 df_ACS_hh_match = deepcopy(df_ACS_hh);
 df_ACS_hh_match_county = filter(r -> (r[:county] .!= 0), df_ACS_hh_match); # Select obs with county for county matching
 df_ACS_hh_match_state = filter(r -> (r[:county] .== 0), df_ACS_hh_match);  # Select obs with missing county for state matching
-#HOTFIX FOR CT -> there are NO hhs with unidentified county in ACS
-append!(df_ACS_hh_match_state, filter(r -> (r[:statename] .== "Connecticut"), df_ACS_hh_match));
+
+# HOTFIX FOR CT -> there are NO hhs with unidentified county in ACS
+# In the HOTFIX, I excluded all the counties that are identified in ASEC from ACS for state-level matching
+ASEC_CT_county = unique(df_ASEC_hh_match.county_name_state_county[df_ASEC_hh.statename .== "Connecticut"]);
+append!(df_ACS_hh_match_state, df_ACS_hh_match[(.!in(ASEC_CT_county).(df_ACS_hh_match.county_name_state_county)) .& (df_ACS_hh_match.statename .== "Connecticut"),:]);
 
 
 ## 2005 and 2006
@@ -305,39 +320,11 @@ ASEC_ACS_match_state!(df_ASEC_hh_match_state_1516, df_ACS_hh_match_state_1516, k
 
 df_ASEC_hh_match_1516_final = vcat(df_ASEC_hh_match_county_1516, df_ASEC_hh_match_state_1516);
 
-
-## HOTFIX FOR CT -> there are hhs with unidentified county in ACS
-
-# 2005 and 2006
-df_ASEC_hh_match_0506_final_CT    = filter(r -> (r[:statename] .== "Connecticut"), df_ASEC_hh_match_0506_final);
-df_ASEC_hh_match_0506_final_ex_CT = filter(r -> (r[:statename] .!= "Connecticut"), df_ASEC_hh_match_0506_final);
-select!(df_ASEC_hh_match_0506_final_CT, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-df_ACS_hh_match_0506 = filter(r -> (r[:YEAR] .== 2005 || r[:YEAR] .== 2006), df_ACS_hh_match);
-ASEC_ACS_match_state!(df_ASEC_hh_match_0506_final_CT, df_ACS_hh_match_0506, k_NN)
-df_ASEC_hh_match_0506_final_final = vcat(df_ASEC_hh_match_0506_final_CT, df_ASEC_hh_match_0506_final_ex_CT);
-
-# 2010 and 2011
-df_ASEC_hh_match_1011_final_CT    = filter(r -> (r[:statename] .== "Connecticut"), df_ASEC_hh_match_1011_final);
-df_ASEC_hh_match_1011_final_ex_CT = filter(r -> (r[:statename] .!= "Connecticut"), df_ASEC_hh_match_1011_final);
-select!(df_ASEC_hh_match_1011_final_CT, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-df_ACS_hh_match_1011 = filter(r -> (r[:YEAR] .== 2010 || r[:YEAR] .== 2011), df_ACS_hh_match);
-ASEC_ACS_match_state!(df_ASEC_hh_match_1011_final_CT, df_ACS_hh_match_1011, k_NN)
-df_ASEC_hh_match_1011_final_final = vcat(df_ASEC_hh_match_1011_final_CT, df_ASEC_hh_match_1011_final_ex_CT);
-
-# 2015 and 2016
-df_ASEC_hh_match_1516_final_CT    = filter(r -> (r[:statename] .== "Connecticut"), df_ASEC_hh_match_1516_final);
-df_ASEC_hh_match_1516_final_ex_CT = filter(r -> (r[:statename] .!= "Connecticut"), df_ASEC_hh_match_1516_final);
-select!(df_ASEC_hh_match_1516_final_CT, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-df_ACS_hh_match_1516 = filter(r -> (r[:YEAR] .== 2015 || r[:YEAR] .== 2016), df_ACS_hh_match);
-ASEC_ACS_match_state!(df_ASEC_hh_match_1516_final_CT, df_ACS_hh_match_1516, k_NN)
-df_ASEC_hh_match_1516_final_final = vcat(df_ASEC_hh_match_1516_final_CT, df_ASEC_hh_match_1516_final_ex_CT);
-
-
 ## Save results
 
-df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
 
 sort!(df_ASEC_hh_match_0506_save, [:YEAR, :SERIAL]);
 sort!(df_ASEC_hh_match_1011_save, [:YEAR, :SERIAL]);
