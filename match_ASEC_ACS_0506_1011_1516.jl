@@ -345,3 +345,86 @@ sort!(df_ASEC_hh_match_1516_save, [:YEAR, :SERIAL]);
 CSV.write(dir_out * "ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+
+df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
+df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
+df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
+
+sort!(df_ASEC_hh_match_0506_save, [:YEAR, :SERIAL]);
+sort!(df_ASEC_hh_match_1011_save, [:YEAR, :SERIAL]);
+sort!(df_ASEC_hh_match_1516_save, [:YEAR, :SERIAL]);
+
+CSV.write(dir_out * "ASEC_ACS_hh_match_quality_0506.csv", df_ASEC_hh_match_0506_save);
+CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1011.csv", df_ASEC_hh_match_1011_save);
+CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1516.csv", df_ASEC_hh_match_1516_save);
+
+## Plot for match quality
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
+xlabel!("Differences to ASEC HHs - Gross Income Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
+xlabel!("Differences to ASEC HHs - Gross Income Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_size_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_size_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_size_mean)
+xlabel!("Differences to ASEC HHs - Size Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_size_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_size_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_size_median)
+xlabel!("Differences to ASEC HHs - Size Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_age_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_age_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_age_mean)
+xlabel!("Differences to ASEC HHs - Age Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_age_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_age_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_age_median)
+xlabel!("Differences to ASEC HHs - Age Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_unitsstr_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_unitsstr_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_unitsstr_mean)
+xlabel!("Differences to ASEC HHs - Unit Structure Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_unitsstr_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_unitsstr_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_unitsstr_median)
+xlabel!("Differences to ASEC HHs - Unit Structure Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_race_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_race_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_race_mean)
+xlabel!("Differences to ASEC HHs - Race Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_race_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_race_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_race_median)
+xlabel!("Differences to ASEC HHs - Race Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_educ_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_educ_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_educ_mean)
+xlabel!("Differences to ASEC HHs - Educ Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_educ_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_educ_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_educ_median)
+xlabel!("Differences to ASEC HHs - Educ Median")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_sex_mean)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_sex_mean)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_sex_mean)
+xlabel!("Differences to ASEC HHs - Sex Mean")
+
+@df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_sex_median)
+@df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_sex_median)
+@df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_sex_median)
+xlabel!("Differences to ASEC HHs - Sex Median")
