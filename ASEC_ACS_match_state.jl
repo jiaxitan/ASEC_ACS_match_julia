@@ -48,7 +48,7 @@ function ASEC_ACS_match_state!(df_ASEC, df_ACS, k)
                 ASEC_obs = array_ASEC_tmp[i, 1:7]
                 idxs, dists = knn(kdtree_county, ASEC_obs, k)
                     #println(df_ASEC_tmp[1, :county_name_state_county] * " " * string(j) * " " * string(i))
-                ASEC_obs_id = convert(Int64, array_ASEC_tmp[i, 7])
+                ASEC_obs_id = convert(Int64, array_ASEC_tmp[i, 8])
                 i_df_ASEC = findfirst(x -> (x == ASEC_obs_id), df_ASEC.ASEC_id)
                 if j == 1
                     df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 8]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 8]);
@@ -57,13 +57,13 @@ function ASEC_ACS_match_state!(df_ASEC, df_ACS, k)
                     df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 10]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 10]);
                     df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 11]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 11]);
                 end
-                df_ASEC[i_df_ASEC, :dif_grossinc_mean] = df_ASEC[i_df_ASEC, :grossinc] - mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :dif_grossinc_median] = df_ASEC[i_df_ASEC, :grossinc] - median(array_ACS_tmp[idxs, 2]);
-                df_ASEC[i_df_ASEC, :dif_size_mean] = df_ASEC[i_df_ASEC, :size] - mean(array_ACS_tmp[idxs, 3]); df_ASEC[i_df_ASEC, :dif_size_median] = df_ASEC[i_df_ASEC, :size] - median(array_ACS_tmp[idxs, 3]);
-                df_ASEC[i_df_ASEC, :dif_age_mean] = df_ASEC[i_df_ASEC, :age] - mean(array_ACS_tmp[idxs, 4]); df_ASEC[i_df_ASEC, :dif_age_median] = df_ASEC[i_df_ASEC, :age] - median(array_ACS_tmp[idxs, 4]);
-                df_ASEC[i_df_ASEC, :dif_unitsstr_mean] = df_ASEC[i_df_ASEC, :unitsstr_recode] - mean(array_ACS_tmp[idxs, 5]); df_ASEC[i_df_ASEC, :dif_unitsstr_median] = df_ASEC[i_df_ASEC, :unitsstr_recode] - median(array_ACS_tmp[idxs, 5]);
-                df_ASEC[i_df_ASEC, :dif_race_mean] = df_ASEC[i_df_ASEC, :race_recode] - mean(array_ACS_tmp[idxs, 6]); df_ASEC[i_df_ASEC, :dif_race_median] = df_ASEC[i_df_ASEC, :race_recode] - median(array_ACS_tmp[idxs, 6]);
-                df_ASEC[i_df_ASEC, :dif_educ_mean] = df_ASEC[i_df_ASEC, :educ_recode] - mean(array_ACS_tmp[idxs, 7]); df_ASEC[i_df_ASEC, :dif_educ_median] = df_ASEC[i_df_ASEC, :educ_recode] - median(array_ACS_tmp[idxs, 7]);
-                df_ASEC[i_df_ASEC, :dif_sex_mean] = df_ASEC[i_df_ASEC, :sex] - mean(array_ACS_tmp[idxs, 8]); df_ASEC[i_df_ASEC, :dif_sex_median] = df_ASEC[i_df_ASEC, :sex] - median(array_ACS_tmp[idxs, 8]);
+                df_ASEC[i_df_ASEC, :dif_grossinc_mean] = df_ASEC[i_df_ASEC, :grossinc] - mean(array_ACS_tmp[idxs, 2]);          df_ASEC[i_df_ASEC, :dif_grossinc_median] = df_ASEC[i_df_ASEC, :grossinc] - median(array_ACS_tmp[idxs, 2]);
+                df_ASEC[i_df_ASEC, :dif_size_mean] = df_ASEC[i_df_ASEC, :size] - mean(array_ACS_tmp[idxs, 3]);                  df_ASEC[i_df_ASEC, :dif_size_median] = df_ASEC[i_df_ASEC, :size] - median(array_ACS_tmp[idxs, 3]);
+                df_ASEC[i_df_ASEC, :dif_age_mean] = df_ASEC[i_df_ASEC, :age] - mean(array_ACS_tmp[idxs, 4]);                    df_ASEC[i_df_ASEC, :dif_age_median] = df_ASEC[i_df_ASEC, :age] - median(array_ACS_tmp[idxs, 4]);
+                df_ASEC[i_df_ASEC, :dif_unitsstr_mean] = df_ASEC[i_df_ASEC, :unitsstr_recode] - mean(array_ACS_tmp[idxs, 5]);   df_ASEC[i_df_ASEC, :dif_unitsstr_median] = df_ASEC[i_df_ASEC, :unitsstr_recode] - median(array_ACS_tmp[idxs, 5]);
+                df_ASEC[i_df_ASEC, :dif_race_mean] = df_ASEC[i_df_ASEC, :race_recode] - mean(array_ACS_tmp[idxs, 6]);           df_ASEC[i_df_ASEC, :dif_race_median] = df_ASEC[i_df_ASEC, :race_recode] - median(array_ACS_tmp[idxs, 6]);
+                df_ASEC[i_df_ASEC, :dif_educ_mean] = df_ASEC[i_df_ASEC, :educ_recode] - mean(array_ACS_tmp[idxs, 7]);           df_ASEC[i_df_ASEC, :dif_educ_median] = df_ASEC[i_df_ASEC, :educ_recode] - median(array_ACS_tmp[idxs, 7]);
+                df_ASEC[i_df_ASEC, :dif_sex_mean] = df_ASEC[i_df_ASEC, :sex] - mean(array_ACS_tmp[idxs, 8]);                    df_ASEC[i_df_ASEC, :dif_sex_median] = df_ASEC[i_df_ASEC, :sex] - median(array_ACS_tmp[idxs, 8]);
             end
 
         end
