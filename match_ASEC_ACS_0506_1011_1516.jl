@@ -176,6 +176,9 @@ ACS_COUNTY_2005_onwards_recode!(df_ACS_sample);
 ACS_METRO_recode!(df_ACS_sample);
 ACS_PROPTX99_recode!(df_ACS_sample);
 
+# Drop observations with UNITSSTR_recode == 99 (Boat, tent, van, other -> does not exist in ASEC)
+filter!(r -> (r[:UNITSSTR_recode] .< 99), df_ACS_sample);
+
 # Generate personal earned income (to compute number of earners in each household)
 ACS_ASEC_inc_earned_person!(df_ACS_sample)
 
@@ -278,7 +281,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_0506, df_ACS_hh_match_county_0506
 df_ASEC_hh_match_county_unmatched_0506 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_0506);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_0506);
 select!(df_ASEC_hh_match_county_unmatched_0506, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_0506, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_0506, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_0506, df_ASEC_hh_match_county_unmatched_0506);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_0506, df_ACS_hh_match_state_0506, k_NN)
 
@@ -300,7 +303,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_1011, df_ACS_hh_match_county_1011
 df_ASEC_hh_match_county_unmatched_1011 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1011);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1011);
 select!(df_ASEC_hh_match_county_unmatched_1011, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1011, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_1011, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_1011, df_ASEC_hh_match_county_unmatched_1011);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_1011, df_ACS_hh_match_state_1011, k_NN)
 
@@ -322,7 +325,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_1516, df_ACS_hh_match_county_1516
 df_ASEC_hh_match_county_unmatched_1516 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1516);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1516);
 select!(df_ASEC_hh_match_county_unmatched_1516, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1516, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_1516, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_1516, df_ASEC_hh_match_county_unmatched_1516);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_1516, df_ACS_hh_match_state_1516, k_NN)
 
