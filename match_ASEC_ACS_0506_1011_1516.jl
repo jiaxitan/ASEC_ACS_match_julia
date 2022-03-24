@@ -19,24 +19,29 @@ using TableView
 using NearestNeighbors
 using HTTP
 
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_ASEC_selection_sampleB.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_ASEC_inc_earned_person.jl")
+# Set function and output directory + ASEC, ACS, state info files
+dir_functions   = "/Users/main/Documents/GitHubRepos/ASEC_ACS_match_julia/";
+dir_out         = "/Users/main/Documents/Dropbox/Research/Tax_prog_fed_state_local/sample/ASEC_ACS_match/";
+file_ASEC       = "/Users/main/OneDrive - Istituto Universitario Europeo/data/ASEC/cps_00072.csv";
+file_ACS        = "/Users/main/OneDrive - Istituto Universitario Europeo/data/ACS/usa_00044.csv";
+file_state_info = "/Users/main/OneDrive - Istituto Universitario Europeo/data/US_state_info/states_fips_names.csv";
 
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_EDUC_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_RACE_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_MARST_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_COUNTY_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_METRO_recode.jl")
+include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
+include(dir_functions * "ACS_ASEC_inc_earned_person.jl")
 
-dir_out = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
+include(dir_functions * "ASEC_UNITSSTR_recode.jl")
+include(dir_functions * "ASEC_EDUC_recode.jl")
+include(dir_functions * "ASEC_RACE_recode.jl")
+include(dir_functions * "ASEC_MARST_recode.jl")
+include(dir_functions * "ASEC_COUNTY_recode.jl")
+include(dir_functions * "ASEC_METRO_recode.jl")
 
 # Import state info
-file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 df_state_info = CSV.read(file_state_info, DataFrame; types=[Int64, Int64, String, String, String, Int64, Int64]);
 
 
 ## Import and prepare ASEC file
-df_ASEC_0 = CSV.read("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_00001.csv", DataFrame);
+df_ASEC_0 = CSV.read(file_ASEC, DataFrame);
 
 select!(df_ASEC_0, Not([:MONTH, :CPSID, :ASECFLAG, :ASECWTH, :CPSIDP, :ASECWT, :CBSASZ]));
 rename!(df_ASEC_0, :STATEFIP => :STATEFIPS);
@@ -56,7 +61,8 @@ replace!(df_ASEC.PROPTAX,  99997=>0);   df_ASEC[!, :PROPTAX] = collect(skipmissi
 # Apply FHSV sample selection
 df_ASEC_sample = ACS_ASEC_selection_sampleB(df_ASEC);
 
-# Recode EDUC, RACE, MARST, COUNTY Names
+# Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
+ASEC_UNITSSTR_recode!(df_ASEC_sample);
 ASEC_EDUC_recode!(df_ASEC_sample);
 ASEC_RACE_recode!(df_ASEC_sample);
 ASEC_MARST_recode!(df_ASEC_sample);
@@ -68,7 +74,7 @@ ACS_ASEC_inc_earned_person!(df_ASEC_sample)
 
 # Collapse at household level
 ASEC_gdf_hh = groupby(df_ASEC_sample, [:YEAR, :SERIAL]);
-df_ASEC_hh = combine(ASEC_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :IND=>first=>:ind, :RACE_recode=>first=>:race_recode, :MARST_recode=>first=>:marst_recode, :OCC=>first=>:occ, :EDUC_recode=>first=>:educ_recode, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY=>first=>:county, :COUNTY_name_state_county=>first=>:county_name_state_county, :METFIPS=>first=>:metfips, :INDIVIDCC=>first=>:individcc, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :PROPTAX=>first=>:proptax, :INCWAGE=>sum=>:incwage, :INCBUS=>sum=>:incbus, :INCFARM=>sum=>:incfarm, :INCINT=>sum=>:incint, :INCDIVID=>sum=>:incdivid, :INCRENT=>sum=>:incrent, :INCASIST=>sum=>:incasist);
+df_ASEC_hh = combine(ASEC_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :IND=>first=>:ind, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :MARST_recode=>first=>:marst_recode, :OCC=>first=>:occ, :EDUC_recode=>first=>:educ_recode, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY=>first=>:county, :COUNTY_name_state_county=>first=>:county_name_state_county, :METFIPS=>first=>:metfips, :INDIVIDCC=>first=>:individcc, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :PROPTAX=>first=>:proptax, :INCWAGE=>sum=>:incwage, :INCBUS=>sum=>:incbus, :INCFARM=>sum=>:incfarm, :INCINT=>sum=>:incint, :INCDIVID=>sum=>:incdivid, :INCRENT=>sum=>:incrent, :INCASIST=>sum=>:incasist);
 insertcols!(df_ASEC_hh, 3, :grossinc => df_ASEC_hh.incwage + df_ASEC_hh.incbus + df_ASEC_hh.incfarm + df_ASEC_hh.incint + df_ASEC_hh.incdivid + df_ASEC_hh.incrent + df_ASEC_hh.incasist);
 filter!(r -> (r[:grossinc] .> 0), df_ASEC_hh); # Innocent
 df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
@@ -123,16 +129,17 @@ ASEC_missing_INDIVIDCC_share = count(i -> (i .== 0), df_ASEC_hh.individcc)/size(
 
 ## Import and prepare ACS file
 
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_METRO_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_RACE_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_EDUC_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_MARST_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_PROPTX99_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_COUNTY_2005_onwards_recode.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ACS_match_PUMA_county.jl")
+include(dir_functions * "ACS_UNITSSTR_recode.jl")
+include(dir_functions * "ACS_METRO_recode.jl")
+include(dir_functions * "ACS_RACE_recode.jl")
+include(dir_functions * "ACS_EDUC_recode.jl")
+include(dir_functions * "ACS_MARST_recode.jl")
+include(dir_functions * "ACS_PROPTX99_recode.jl")
+include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
+include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
-df_ACS = CSV.read("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00005.csv", DataFrame);
+df_ACS = CSV.read(file_ACS, DataFrame);
 
 select!(df_ACS, Not([:SAMPLE, :CBSERIAL, :HHWT, :CLUSTER, :STRATA, :GQ, :PERWT, :OWNERSHPD, :RACED, :EDUCD, :WKSWORK1]));
 
@@ -160,7 +167,8 @@ rename!(compare_county, :COUNTYFIPS_function => :Original, :COUNTYFIPS2_function
 insertcols!(compare_county, size(compare_county,2)+1, :STATENAME => df_state_info.STATENAME);
 CSV.write(dir_out * "compare_county_matching.csv", compare_county);
 
-# Recode EDUC, RACE, MARST, COUNTY Names
+# Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
+ACS_UNITSSTR_recode!(df_ACS_sample);
 ACS_EDUC_recode!(df_ACS_sample);
 ACS_RACE_recode!(df_ACS_sample);
 ACS_MARST_recode!(df_ACS_sample);
@@ -168,12 +176,15 @@ ACS_COUNTY_2005_onwards_recode!(df_ACS_sample);
 ACS_METRO_recode!(df_ACS_sample);
 ACS_PROPTX99_recode!(df_ACS_sample);
 
+# Drop observations with UNITSSTR_recode == 99 (Boat, tent, van, other -> does not exist in ASEC)
+filter!(r -> (r[:UNITSSTR_recode] .< 99), df_ACS_sample);
+
 # Generate personal earned income (to compute number of earners in each household)
 ACS_ASEC_inc_earned_person!(df_ACS_sample)
 
 # Collapse at household level
 ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
-df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
+df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
 insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
 filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
 df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
@@ -235,8 +246,8 @@ ACS_missing_CITY_share      = count(i -> (i .== 0), df_ACS_hh.city)/size(df_ACS_
 
 ## Match ASEC to ACS observations
 
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_ACS_match_county.jl")
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/ASEC_ACS_match_state.jl")
+include(dir_functions * "ASEC_ACS_match_county.jl")
+include(dir_functions * "ASEC_ACS_match_state.jl")
 const k_NN = 10;
 
 # Prepare ASEC and ACS data
@@ -270,7 +281,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_0506, df_ACS_hh_match_county_0506
 df_ASEC_hh_match_county_unmatched_0506 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_0506);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_0506);
 select!(df_ASEC_hh_match_county_unmatched_0506, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_0506, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_0506, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_0506, df_ASEC_hh_match_county_unmatched_0506);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_0506, df_ACS_hh_match_state_0506, k_NN)
 
@@ -292,7 +303,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_1011, df_ACS_hh_match_county_1011
 df_ASEC_hh_match_county_unmatched_1011 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1011);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1011);
 select!(df_ASEC_hh_match_county_unmatched_1011, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1011, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_1011, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_1011, df_ASEC_hh_match_county_unmatched_1011);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_1011, df_ACS_hh_match_state_1011, k_NN)
 
@@ -314,7 +325,7 @@ ASEC_ACS_match_county!(df_ASEC_hh_match_county_1516, df_ACS_hh_match_county_1516
 df_ASEC_hh_match_county_unmatched_1516 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1516);
 filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1516);
 select!(df_ASEC_hh_match_county_unmatched_1516, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1516, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
+select!(df_ASEC_hh_match_county_unmatched_1516, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
 append!(df_ASEC_hh_match_state_1516, df_ASEC_hh_match_county_unmatched_1516);
 ASEC_ACS_match_state!(df_ASEC_hh_match_state_1516, df_ACS_hh_match_state_1516, k_NN)
 
