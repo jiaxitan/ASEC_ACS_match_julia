@@ -21,6 +21,7 @@ using HTTP
 # Set function and output directory + ASEC, ACS, state info files
 dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/";
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
+fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
 file_ASEC       = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_00002.csv";
 file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00009.csv";
 file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
@@ -185,7 +186,7 @@ ACS_ASEC_inc_earned_person!(df_ACS_sample)
 
 # Collapse at household level
 ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
-df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
+df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY_name_state_county=>first=>:county_name_state_county, :COUNTY2_name_state_county=>first=>:county2_name_state_county, :COUNTYFIPS_recode=>first=>:county, :COUNTYFIPS2=>first=>:county2, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
 insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
 filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
 df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
@@ -244,6 +245,15 @@ ACS_missing_METRO_share     = count(i -> (i .== 0), df_ACS_hh.metro)/size(df_ACS
 #ACS_missing_METAREA_share   = count(i -> (i .== 0), df_ACS_hh.metarea)/size(df_ACS_hh,1)*100    # Compute share of observations with missing METAREA
 ACS_missing_CITY_share      = count(i -> (i .== 0), df_ACS_hh.city)/size(df_ACS_hh,1)*100       # Compute share of observations with missing CITY
 
+#=
+plot_Nhh = combine(groupby(df_ACS_hh, [:YEAR, :county_name_state_county]), nrow, :statename);
+sort!(plot_Nhh, [:YEAR, :nrow]);
+minimum(plot_Nhh.nrow);
+
+plot_Nhh = combine(groupby(df_ACS_hh, [:YEAR, :statename, :county2_name_state_county]), nrow);
+sort!(plot_Nhh, [:YEAR, :nrow]);
+minimum(plot_Nhh.nrow);
+=#
 
 ## Match ASEC to ACS observations
 
@@ -359,72 +369,88 @@ CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1011.csv", df_ASEC_hh_match_1011_
 CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1516.csv", df_ASEC_hh_match_1516_save);
 
 ## Plot for match quality
+
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
 xlabel!("Differences to ASEC HHs - Gross Income Mean")
+savefig(fig_dir_out * "Grossinc_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_grossinc_median[(:dif_grossinc_median .> quantile!(:dif_grossinc_median, 0.05, sorted = false)) .& (:dif_grossinc_median .< quantile!(:dif_grossinc_median, 0.95, sorted = false))])
 xlabel!("Differences to ASEC HHs - Gross Income Median")
+savefig(fig_dir_out * "Grossinc_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_size_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_size_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_size_mean)
 xlabel!("Differences to ASEC HHs - Size Mean")
+savefig(fig_dir_out * "Size_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_size_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_size_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_size_median)
 xlabel!("Differences to ASEC HHs - Size Median")
+savefig(fig_dir_out * "Size_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_age_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_age_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_age_mean)
 xlabel!("Differences to ASEC HHs - Age Mean")
+savefig(fig_dir_out * "Age_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_age_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_age_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_age_median)
 xlabel!("Differences to ASEC HHs - Age Median")
+savefig(fig_dir_out * "Age_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_unitsstr_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_unitsstr_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_unitsstr_mean)
 xlabel!("Differences to ASEC HHs - Unit Structure Mean")
+savefig(fig_dir_out * "UnitsStr_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_unitsstr_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_unitsstr_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_unitsstr_median)
 xlabel!("Differences to ASEC HHs - Unit Structure Median")
+savefig(fig_dir_out * "UnitsStr_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_race_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_race_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_race_mean)
 xlabel!("Differences to ASEC HHs - Race Mean")
+savefig(fig_dir_out * "Race_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_race_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_race_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_race_median)
 xlabel!("Differences to ASEC HHs - Race Median")
+savefig(fig_dir_out * "Race_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_educ_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_educ_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_educ_mean)
 xlabel!("Differences to ASEC HHs - Educ Mean")
+savefig(fig_dir_out * "Educ_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_educ_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_educ_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_educ_median)
 xlabel!("Differences to ASEC HHs - Educ Median")
+savefig(fig_dir_out * "Educ_median.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_sex_mean)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_sex_mean)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_sex_mean)
 xlabel!("Differences to ASEC HHs - Sex Mean")
+savefig(fig_dir_out * "Sex_mean.pdf")
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_sex_median)
 @df df_ASEC_hh_match_1011_final density!(label = "2010/11", :dif_sex_median)
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_sex_median)
 xlabel!("Differences to ASEC HHs - Sex Median")
+savefig(fig_dir_out * "Sex_median.pdf")
+

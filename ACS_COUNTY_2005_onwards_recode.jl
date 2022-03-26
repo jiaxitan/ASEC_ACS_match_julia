@@ -4,15 +4,25 @@ function ACS_COUNTY_2005_onwards_recode!(df)
     # Returns STATEFIPS*COUNTYFIPS
 
     insertcols!(df, 3, :COUNTYFIPS_recode => zeros(Int64, size(df,1)));
+    insertcols!(df, 3, :COUNTYFIPS2_recode => zeros(Int64, size(df,1)));
     for i = 1:size(df,1)
         i_statefip_tmp = df[i, :STATEFIPS]
         i_statefip = lpad(i_statefip_tmp, 2, "0") # If one digit, add one leading zeros
         i_countyfip_tmp = df[i, :COUNTYFIPS]
         i_countyfip = lpad(i_countyfip_tmp, 3, "0") # If one digit, add two leading zeros. If two digits, add one leading zeros
+        i_countyfip2_tmp = df[i, :COUNTYFIPS2]
+        i_countyfip2 = lpad(i_countyfip2_tmp, 3, "0") # If one digit, add two leading zeros. If two digits, add one leading zeros
+
         if i_countyfip_tmp == 0
             df[i, :COUNTYFIPS_recode] = 0
         else
             df[i, :COUNTYFIPS_recode] = parse(Int64, i_statefip * i_countyfip)
+        end
+
+        if i_countyfip2_tmp == 0
+            df[i, :COUNTYFIPS2_recode] = 0
+        else
+            df[i, :COUNTYFIPS2_recode] = parse(Int64, i_statefip * i_countyfip2)
         end
     end
 
@@ -91,6 +101,7 @@ function ACS_COUNTY_2005_onwards_recode!(df)
     8041 => "El Paso, Colorado",
     8059 => "Jefferson, Colorado",
     8069 => "Larimer, Colorado",
+    8077 => "Mesa, Colorado", 
     8101 => "Pueblo, Colorado",
     8123 => "Weld, Colorado",
 
@@ -485,6 +496,7 @@ function ACS_COUNTY_2005_onwards_recode!(df)
     42021=> "Cambria, Pennsylvania",
     42027=> "Centre, Pennsylvania",
     42029=> "Chester, Pennsylvania",
+    42041=> "Cumberland, Pennsylvania",
     42043=> "Dauphin, Pennsylvania",
     42045=> "Delaware, Pennsylvania",
     42049=> "Erie, Pennsylvania",
@@ -636,13 +648,21 @@ function ACS_COUNTY_2005_onwards_recode!(df)
     55139=> "Winnebago, Wisconsin")
 
     df[:, :COUNTY_name] = map(x -> COUNTY_2005_onwards_dic[x], df[:, :COUNTYFIPS_recode]);
+    df[:, :COUNTY2_name] = map(x -> COUNTY_2005_onwards_dic[x], df[:, :COUNTYFIPS2_recode]);
 
     insertcols!(df, size(df,2), :COUNTY_name_state_county => Array{String}(undef, size(df,1)));
+    insertcols!(df, size(df,2), :COUNTY2_name_state_county => Array{String}(undef, size(df,1)));
     for i = 1:size(df,1)
         if occursin(r",", df[i, :COUNTY_name])
             df[i, :COUNTY_name_state_county] = strip(split(df[i, :COUNTY_name], ",")[2] * ", " * split(df[i, :COUNTY_name], ",")[1])
         else
             df[i, :COUNTY_name_state_county] = "County not identified"
+        end
+
+        if occursin(r",", df[i, :COUNTY2_name])
+            df[i, :COUNTY2_name_state_county] = strip(split(df[i, :COUNTY2_name], ",")[2] * ", " * split(df[i, :COUNTY2_name], ",")[1])
+        else
+            df[i, :COUNTY2_name_state_county] = "County not identified"
         end
     end
 
