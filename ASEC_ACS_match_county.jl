@@ -3,7 +3,7 @@
 # -1: ASEC county not identified in ACS
 # -2: ACS has less than k owners (or renters) in ASEC county
 
-function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
+function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
 
     sort!(df_ASEC, :county); sort!(df_ACS, :county);
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ASEC_id => collect(1:size(df_ASEC,1)));
@@ -11,6 +11,7 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_valueh_mean  => -2 .* ones(size(df_ASEC,1)));  insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_valueh_median  => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rentgrs_mean => -2 .* ones(size(df_ASEC,1)));  insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rentgrs_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rent_mean => -2 .* ones(size(df_ASEC,1)));     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rent_median => -2 .* ones(size(df_ASEC,1)));
+    #=
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_grossinc_mean => -2 .* ones(size(df_ASEC,1))); insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_grossinc_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_size_mean  => -2 .* ones(size(df_ASEC,1)));    insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_size_median  => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_age_mean => -2 .* ones(size(df_ASEC,1)));      insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_age_median => -2 .* ones(size(df_ASEC,1)));
@@ -18,6 +19,7 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_race_mean => -2 .* ones(size(df_ASEC,1)));     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_race_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_educ_mean => -2 .* ones(size(df_ASEC,1)));     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_educ_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_sex_mean => -2 .* ones(size(df_ASEC,1)));      insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_sex_median => -2 .* ones(size(df_ASEC,1)));
+    =#
 
    for (asec_county_idx, asec_county) in enumerate(unique(df_ASEC.county))
 
@@ -38,9 +40,9 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
 
         #array_ASEC_tmp0 = convert.(Float64, Array(select(df_ASEC_tmp, [:ownershp, :grossinc, :grossinc_potential, :size, :age, :race_recode, :educ_recode, :sex, :ASEC_id])))
         #array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  [:ownershp, :grossinc, :grossinc_potential, :size, :age, :race_recode, :educ_recode, :sex, :proptx99_recode, :valueh, :rentgrs, :rent])))
-
-        array_ASEC_tmp0 = convert.(Float64, Array(select(df_ASEC_tmp, [:ownershp, :grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex, :ASEC_id])))
-        array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  [:ownershp, :grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex, :proptx99_recode, :valueh, :rentgrs, :rent])))
+        
+        array_ASEC_tmp0 = convert.(Float64, Array(select(df_ASEC_tmp, vcat([:ownershp, :ASEC_id], matching_elements))))
+        array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  vcat([:ownershp, :proptx99_recode, :valueh, :rentgrs, :rent], matching_elements))))
 
         for j = 1:2 # Owners and renters
 
@@ -57,22 +59,23 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
                 continue
             end
 
-            array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 1:7]))
+            array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 5:end]))
             kdtree_county = KDTree(array_ACS_tmp_transpose)
 
             for i = 1:size(array_ASEC_tmp, 1)
-                ASEC_obs = array_ASEC_tmp[i, 1:7]
+                ASEC_obs = array_ASEC_tmp[i, 2:end]
                 idxs, dists = knn(kdtree_county, ASEC_obs, k)
                     #println(df_ASEC_tmp[1, :county_name_state_county] * " " * string(j) * " " * string(i))
-                ASEC_obs_id = convert(Int64, array_ASEC_tmp[i, 8])
+                ASEC_obs_id = convert(Int64, array_ASEC_tmp[i, 1])
                 i_df_ASEC = findfirst(x -> (x == ASEC_obs_id), df_ASEC.ASEC_id)
                 if j == 1
-                    df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 8]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 8]);
-                    df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 9]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 9]);
+                    df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
+                    df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
                 else
-                    df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 10]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 10]);
-                    df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 11]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 11]);
+                    df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 3]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 3]);
+                    df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 4]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 4]);
                 end
+                #=
                 df_ASEC[i_df_ASEC, :dif_grossinc_mean] = mean(array_ACS_tmp[idxs, 1]) - df_ASEC[i_df_ASEC, :grossinc];          df_ASEC[i_df_ASEC, :dif_grossinc_median] = median(array_ACS_tmp[idxs, 1]) - df_ASEC[i_df_ASEC, :grossinc];
                 df_ASEC[i_df_ASEC, :dif_size_mean] = mean(array_ACS_tmp[idxs, 2]) - df_ASEC[i_df_ASEC, :size];                  df_ASEC[i_df_ASEC, :dif_size_median] = median(array_ACS_tmp[idxs, 2]) - df_ASEC[i_df_ASEC, :size];
                 df_ASEC[i_df_ASEC, :dif_age_mean] = mean(array_ACS_tmp[idxs, 3]) - df_ASEC[i_df_ASEC, :age];                    df_ASEC[i_df_ASEC, :dif_age_median] = median(array_ACS_tmp[idxs, 3]) - df_ASEC[i_df_ASEC, :age];
@@ -80,8 +83,8 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k)
                 df_ASEC[i_df_ASEC, :dif_race_mean] = mean(array_ACS_tmp[idxs, 5]) - df_ASEC[i_df_ASEC, :race_recode];           df_ASEC[i_df_ASEC, :dif_race_median] = median(array_ACS_tmp[idxs, 5]) - df_ASEC[i_df_ASEC, :race_recode];
                 df_ASEC[i_df_ASEC, :dif_educ_mean] = mean(array_ACS_tmp[idxs, 6]) - df_ASEC[i_df_ASEC, :educ_recode];           df_ASEC[i_df_ASEC, :dif_educ_median] = median(array_ACS_tmp[idxs, 6]) - df_ASEC[i_df_ASEC, :educ_recode];
                 df_ASEC[i_df_ASEC, :dif_sex_mean] = mean(array_ACS_tmp[idxs, 7]) - df_ASEC[i_df_ASEC, :sex];                    df_ASEC[i_df_ASEC, :dif_sex_median] = median(array_ACS_tmp[idxs, 7]) - df_ASEC[i_df_ASEC, :sex];
+                =#
             end
-
         end
 
     end

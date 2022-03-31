@@ -83,7 +83,7 @@ df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
 ols_potential_earnings_ASEC_fe = reg(df_ASEC_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
 println("ASEC: R2 of potential earnings regression: " * string( round(adjr2(ols_potential_earnings_ASEC_fe),digits=2) ))
 df_ASEC_hh[:, :grossinc_log_potential] = predict(ols_potential_earnings_ASEC_fe, df_ASEC_hh);
-df_ASEC_hh[:, :grossinc_potential] = exp.(predict(ols_potential_earnings_ASEC_fe, df_ASEC_hh));
+df_ASEC_hh[:, :grossinc_potential] = exp.(pdf_ASEC_hh[:, :grossinc_log_potential]);
 
 # # Potential Earnings Regression using GLM package -> slow
 # transform!(df_ASEC_hh, [:YEAR, :sex, :race_recode, :educ_recode, :marst_recode, :ind, :occ] .=> categorical, renamecols = false);
@@ -195,7 +195,7 @@ df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
 ols_potential_earnings_ACS_fe = reg(df_ACS_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
 println("ACS: R2 of potential earnings regression: " * string( round(adjr2(ols_potential_earnings_ACS_fe),digits=2) ));
 df_ACS_hh[:, :grossinc_log_potential] = predict(ols_potential_earnings_ACS_fe, df_ACS_hh);
-df_ACS_hh[:, :grossinc_potential] = exp.(predict(ols_potential_earnings_ACS_fe, df_ACS_hh));
+df_ACS_hh[:, :grossinc_potential] = exp.(df_ACS_hh[:, :grossinc_log_potential]);
 
 # # Potential Earnings Regression using GLM package -> slow
 # transform!(df_ACS_hh, [:YEAR, :sex, :race_recode, :educ_recode, :marst_recode, :ind, :occ] .=> categorical, renamecols = false);
@@ -245,20 +245,15 @@ ACS_missing_METRO_share     = count(i -> (i .== 0), df_ACS_hh.metro)/size(df_ACS
 #ACS_missing_METAREA_share   = count(i -> (i .== 0), df_ACS_hh.metarea)/size(df_ACS_hh,1)*100    # Compute share of observations with missing METAREA
 ACS_missing_CITY_share      = count(i -> (i .== 0), df_ACS_hh.city)/size(df_ACS_hh,1)*100       # Compute share of observations with missing CITY
 
-#=
-plot_Nhh = combine(groupby(df_ACS_hh, [:YEAR, :county_name_state_county]), nrow, :statename);
-sort!(plot_Nhh, [:YEAR, :nrow]);
-minimum(plot_Nhh.nrow);
-
-plot_Nhh = combine(groupby(df_ACS_hh, [:YEAR, :statename, :county2_name_state_county]), nrow);
-sort!(plot_Nhh, [:YEAR, :nrow]);
-minimum(plot_Nhh.nrow);
-=#
+CSV.write(dir_out * "ASEC_sample.csv", df_ASEC_hh);
+CSV.write(dir_out * "ACS_sample.csv", df_ACS_hh);
 
 ## Match ASEC to ACS observations
 
 include(dir_functions * "ASEC_ACS_match_county.jl")
 include(dir_functions * "ASEC_ACS_match_state.jl")
+include(dir_functions * "ASEC_ACS_match.jl")
+matching_set = [:grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex];
 const k_NN = 10;
 
 # Prepare ASEC and ACS data
@@ -272,75 +267,13 @@ df_ACS_hh_match_county = filter(r -> (r[:county] .!= 0), df_ACS_hh_match); # Sel
 df_ACS_hh_match_state = filter(r -> (r[:county] .== 0), df_ACS_hh_match);  # Select obs with missing county for state matching
 
 ## 2005 and 2006
-
-df_ASEC_hh_match_county_0506 = filter(r -> (r[:YEAR] .== 2005 || r[:YEAR] .== 2006), df_ASEC_hh_match_county);
-df_ASEC_hh_match_state_0506  = filter(r -> (r[:YEAR] .== 2005 || r[:YEAR] .== 2006), df_ASEC_hh_match_state);
-
-df_ACS_hh_match_county_0506 = filter(r -> (r[:YEAR] .== 2005 || r[:YEAR] .== 2006), df_ACS_hh_match_county);
-df_ACS_hh_match_state_0506  = filter(r -> (r[:YEAR] .== 2005 || r[:YEAR] .== 2006), df_ACS_hh_match_state);
-
-# 1. ASEC observations with identified county -> match to ACS obs in same county
-ASEC_ACS_match_county!(df_ASEC_hh_match_county_0506, df_ACS_hh_match_county_0506, k_NN)
-
-# 2. Merge unmatched county observations with state level matching
-df_ASEC_hh_match_county_unmatched_0506 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_0506);
-filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_0506);
-df_ASEC_hh_match_county_matched_counties_0506 = unique(df_ASEC_hh_match_county_0506.county);
-select!(df_ASEC_hh_match_county_unmatched_0506, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_0506, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
-append!(df_ASEC_hh_match_state_0506, df_ASEC_hh_match_county_unmatched_0506);
-append!(df_ACS_hh_match_state_0506, df_ACS_hh_match_county_0506[.!in(df_ASEC_hh_match_county_matched_counties_0506).(df_ACS_hh_match_county_0506.county),:]);
-ASEC_ACS_match_state!(df_ASEC_hh_match_state_0506, df_ACS_hh_match_state_0506, k_NN)
-
-df_ASEC_hh_match_0506_final = vcat(df_ASEC_hh_match_county_0506, df_ASEC_hh_match_state_0506);
-
+df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
 ## 2010 and 2011
-
-df_ASEC_hh_match_county_1011 = filter(r -> (r[:YEAR] .== 2010 || r[:YEAR] .== 2011), df_ASEC_hh_match_county);
-df_ASEC_hh_match_state_1011  = filter(r -> (r[:YEAR] .== 2010 || r[:YEAR] .== 2011), df_ASEC_hh_match_state);
-
-df_ACS_hh_match_county_1011 = filter(r -> (r[:YEAR] .== 2010 || r[:YEAR] .== 2011), df_ACS_hh_match_county);
-df_ACS_hh_match_state_1011  = filter(r -> (r[:YEAR] .== 2010 || r[:YEAR] .== 2011), df_ACS_hh_match_state);
-
-# 1. ASEC observations with identified county -> match to ACS obs in same county
-ASEC_ACS_match_county!(df_ASEC_hh_match_county_1011, df_ACS_hh_match_county_1011, k_NN)
-
-# 2. Merge unmatched county observations with state level matching
-df_ASEC_hh_match_county_unmatched_1011 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1011);
-filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1011);
-df_ASEC_hh_match_county_matched_counties_1011 = unique(df_ASEC_hh_match_county_1011.county);
-select!(df_ASEC_hh_match_county_unmatched_1011, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1011, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
-append!(df_ASEC_hh_match_state_1011, df_ASEC_hh_match_county_unmatched_1011);
-append!(df_ACS_hh_match_state_1011, df_ACS_hh_match_county_1011[.!in(df_ASEC_hh_match_county_matched_counties_1011).(df_ACS_hh_match_county_1011.county),:]);
-ASEC_ACS_match_state!(df_ASEC_hh_match_state_1011, df_ACS_hh_match_state_1011, k_NN)
-
-df_ASEC_hh_match_1011_final = vcat(df_ASEC_hh_match_county_1011, df_ASEC_hh_match_state_1011);
-
+df_ASEC_hh_match_1011_final = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
 ## 2015 and 2016
-
-df_ASEC_hh_match_county_1516 = filter(r -> (r[:YEAR] .== 2015 || r[:YEAR] .== 2016), df_ASEC_hh_match_county);
-df_ASEC_hh_match_state_1516  = filter(r -> (r[:YEAR] .== 2015 || r[:YEAR] .== 2016), df_ASEC_hh_match_state);
-
-df_ACS_hh_match_county_1516 = filter(r -> (r[:YEAR] .== 2015 || r[:YEAR] .== 2016), df_ACS_hh_match_county);
-df_ACS_hh_match_state_1516  = filter(r -> (r[:YEAR] .== 2015 || r[:YEAR] .== 2016), df_ACS_hh_match_state);
-
-# 1. ASEC observations with identified county -> match to ACS obs in same county
-ASEC_ACS_match_county!(df_ASEC_hh_match_county_1516, df_ACS_hh_match_county_1516, k_NN)
-
-# 2. Merge unmatched county observations with state level matching
-df_ASEC_hh_match_county_unmatched_1516 = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_match_county_1516);
-filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_match_county_1516);
-df_ASEC_hh_match_county_matched_counties_1516 = unique(df_ASEC_hh_match_county_1516.county);
-select!(df_ASEC_hh_match_county_unmatched_1516, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
-select!(df_ASEC_hh_match_county_unmatched_1516, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
-append!(df_ASEC_hh_match_state_1516, df_ASEC_hh_match_county_unmatched_1516);
-append!(df_ACS_hh_match_state_1516, df_ACS_hh_match_county_1516[.!in(df_ASEC_hh_match_county_matched_counties_1516).(df_ACS_hh_match_county_1516.county),:]);
-ASEC_ACS_match_state!(df_ASEC_hh_match_state_1516, df_ACS_hh_match_state_1516, k_NN)
-
-df_ASEC_hh_match_1516_final = vcat(df_ASEC_hh_match_county_1516, df_ASEC_hh_match_state_1516);
+df_ASEC_hh_match_1516_final = ASEC_ACS_match([2015, 2016], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
 ## Save results
 
@@ -356,6 +289,7 @@ CSV.write(dir_out * "ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
 
+#=
 df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
 df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
 df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR, :SERIAL, :statename, :dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]);
@@ -367,6 +301,7 @@ sort!(df_ASEC_hh_match_1516_save, [:YEAR, :SERIAL]);
 CSV.write(dir_out * "ASEC_ACS_hh_match_quality_0506.csv", df_ASEC_hh_match_0506_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1011.csv", df_ASEC_hh_match_1011_save);
 CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1516.csv", df_ASEC_hh_match_1516_save);
+=#
 
 ## Plot for match quality
 
@@ -454,3 +389,82 @@ savefig(fig_dir_out * "Sex_mean.pdf")
 xlabel!("Differences to ASEC HHs - Sex Median")
 savefig(fig_dir_out * "Sex_median.pdf")
 
+## Home Value - Income Plot ACS 2005/06
+
+include(dir_functions * "inc_valueh_rentgrs_regressivity.jl");
+fig2_dir_out = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Engel_curves/";
+
+# A. ACS data
+df_owners_mean = engel_owners_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
+df_renters_mean = engel_renters_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
+
+p1 = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2005/2006)");
+
+# B. 1st matching
+matching_set = [:grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex];
+
+df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
+df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p2_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC ALL, 2005/2006)");
+
+df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
+df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
+df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p2_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC ALL, 2005/2006)");
+
+# C. 2nd matching - no recodes
+matching_set = [:grossinc, :size, :age, :unitsstr_recode];
+
+df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
+df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p3_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC NO CODE, 2005/2006)");
+
+df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
+df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
+df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p3_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC NO CODE, 2005/2006)");
+
+# D. 3rd matching - permanent income
+matching_set = [:grossinc_potential, :size, :unitsstr_recode];
+
+df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
+df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p4_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC PERM. INC, 2005/2006)");
+
+df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
+df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
+df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
+df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+
+p4_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC PERM. INC, 2005/2006)");
+
+# Combine plots
+plot(p1, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
+savefig(fig2_dir_out * "Mean_Engel_curve_ACS_homevalues_rents.pdf");
+
+plot(p1, p2_mean, p2_mean, p2_mean, layout = (2,2), size = (1200,800))
+savefig(fig2_dir_out * "Control.pdf");
+
+
+
+plot(p1, p2_median, p3_median, p4_median, layout = (2,2), size = (1200,800))
+savefig(fig2_dir_out * "Median_Engel_curve_ACS_homevalues_rents.pdf");
