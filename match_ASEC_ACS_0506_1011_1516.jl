@@ -83,7 +83,7 @@ df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
 ols_potential_earnings_ASEC_fe = reg(df_ASEC_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
 println("ASEC: R2 of potential earnings regression: " * string( round(adjr2(ols_potential_earnings_ASEC_fe),digits=2) ))
 df_ASEC_hh[:, :grossinc_log_potential] = predict(ols_potential_earnings_ASEC_fe, df_ASEC_hh);
-df_ASEC_hh[:, :grossinc_potential] = exp.(pdf_ASEC_hh[:, :grossinc_log_potential]);
+df_ASEC_hh[:, :grossinc_potential] = exp.(df_ASEC_hh[:, :grossinc_log_potential]);
 
 # # Potential Earnings Regression using GLM package -> slow
 # transform!(df_ASEC_hh, [:YEAR, :sex, :race_recode, :educ_recode, :marst_recode, :ind, :occ] .=> categorical, renamecols = false);
@@ -244,9 +244,13 @@ ACS_missing_COUNTYFIP_share = count(i -> (i .== 0), df_ACS_hh.county)/size(df_AC
 ACS_missing_METRO_share     = count(i -> (i .== 0), df_ACS_hh.metro)/size(df_ACS_hh,1)*100      # Compute share of observations with missing METRO
 #ACS_missing_METAREA_share   = count(i -> (i .== 0), df_ACS_hh.metarea)/size(df_ACS_hh,1)*100    # Compute share of observations with missing METAREA
 ACS_missing_CITY_share      = count(i -> (i .== 0), df_ACS_hh.city)/size(df_ACS_hh,1)*100       # Compute share of observations with missing CITY
-
+ #=
 CSV.write(dir_out * "ASEC_sample.csv", df_ASEC_hh);
 CSV.write(dir_out * "ACS_sample.csv", df_ACS_hh);
+
+df_ASEC_hh = CSV.read(dir_out * "ASEC_sample.csv", DataFrame);
+df_ACS_hh = CSV.read(dir_out * "ACS_sample.csv", DataFrame);
+=#
 
 ## Match ASEC to ACS observations
 
@@ -303,6 +307,7 @@ CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1011.csv", df_ASEC_hh_match_1011_
 CSV.write(dir_out * "ASEC_ACS_hh_match_quality_1516.csv", df_ASEC_hh_match_1516_save);
 =#
 
+#=
 ## Plot for match quality
 
 @df df_ASEC_hh_match_0506_final density(label = "2005/06", :dif_grossinc_mean[(:dif_grossinc_mean .> quantile!(:dif_grossinc_mean, 0.05, sorted = false)) .& (:dif_grossinc_mean .< quantile!(:dif_grossinc_mean, 0.95, sorted = false))])
@@ -388,6 +393,7 @@ savefig(fig_dir_out * "Sex_mean.pdf")
 @df df_ASEC_hh_match_1516_final density!(label = "2015/16", :dif_sex_median)
 xlabel!("Differences to ASEC HHs - Sex Median")
 savefig(fig_dir_out * "Sex_median.pdf")
+=#
 
 ## Home Value - Income Plot ACS 2005/06
 
@@ -402,6 +408,10 @@ p1 = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 200
 
 # B. 1st matching
 matching_set = [:grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex];
+df_ASEC_hh_match_county.race_recode[df_ASEC_hh_match_county.race_recode .!= 1] .= 2;
+df_ACS_hh_match_county.race_recode[df_ACS_hh_match_county.race_recode .!= 1] .= 2;
+df_ASEC_hh_match_state.race_recode[df_ASEC_hh_match_state.race_recode .!= 1] .= 2;
+df_ACS_hh_match_state.race_recode[df_ACS_hh_match_state.race_recode .!= 1] .= 2;
 
 df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
@@ -459,12 +469,7 @@ p4_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curve
 
 # Combine plots
 plot(p1, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
-savefig(fig2_dir_out * "Mean_Engel_curve_ACS_homevalues_rents.pdf");
-
-plot(p1, p2_mean, p2_mean, p2_mean, layout = (2,2), size = (1200,800))
-savefig(fig2_dir_out * "Control.pdf");
-
-
+savefig(fig2_dir_out * "Weighted_Mean_Engel_curve_ACS_homevalues_rents.pdf");
 
 plot(p1, p2_median, p3_median, p4_median, layout = (2,2), size = (1200,800))
-savefig(fig2_dir_out * "Median_Engel_curve_ACS_homevalues_rents.pdf");
+savefig(fig2_dir_out * "Weighted_Median_Engel_curve_ACS_homevalues_rents.pdf");

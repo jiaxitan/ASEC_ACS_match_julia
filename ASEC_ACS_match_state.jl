@@ -16,6 +16,12 @@ function ASEC_ACS_match_state!(df_ASEC, df_ACS, k, matching_elements)
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_educ_mean => -2 .* ones(size(df_ASEC,1)));     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_educ_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_sex_mean => -2 .* ones(size(df_ASEC,1)));      insertcols!(df_ASEC, size(df_ASEC,2)+1, :dif_sex_median => -2 .* ones(size(df_ASEC,1)));
     =#
+
+    ASEC_std = std.(eachcol(df_ASEC[:, matching_elements]))
+    ASEC_std[ASEC_std .== 0] .= 1
+    ACS_std = std.(eachcol(df_ACS[:, matching_elements]))
+    ACS_std[ACS_std .== 0] .= 1;
+
     for (asec_state_idx, asec_state) in enumerate(unique(df_ASEC.statename))
 
         df_ASEC_tmp = filter(r -> (r[:statename] .== asec_state), df_ASEC)
@@ -41,6 +47,9 @@ function ASEC_ACS_match_state!(df_ASEC, df_ACS, k, matching_elements)
                 printstyled(df_ASEC_tmp[1, :statename] * " has less than " * string(k) * " renters in ACS\n"; color = :red)
                 continue
             end
+
+            array_ASEC_tmp[:, 2:end] = array_ASEC_tmp[:, 2:end]./transpose(ASEC_std);
+            array_ACS_tmp[:, 5:end] = array_ACS_tmp[:, 5:end]./transpose(ACS_std);
 
             array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 5:end]))
             kdtree_county = KDTree(array_ACS_tmp_transpose)
