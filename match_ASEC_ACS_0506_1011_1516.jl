@@ -17,6 +17,7 @@ using GLM, PrettyTables, FixedEffectModels, RegressionTables, CategoricalArrays
 using TableView
 using NearestNeighbors
 using HTTP
+using Distributions
 
 # Set function and output directory + ASEC, ACS, state info files
 dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_ACS_match_julia/";
@@ -251,6 +252,36 @@ CSV.write(dir_out * "ACS_sample.csv", df_ACS_hh);
 df_ASEC_hh = CSV.read(dir_out * "ASEC_sample.csv", DataFrame);
 df_ACS_hh = CSV.read(dir_out * "ACS_sample.csv", DataFrame);
 =#
+topcode_test = combine(groupby(df_ACS_hh, :YEAR), :proptx99_recode => (s -> (topcode = sum(s .== 10000))) => :topcode, nrow);
+insertcols!(topcode_test, ncol(topcode_test)+1, :topcode_share => topcode_test.topcode./topcode_test.nrow);
+topcode_test
+
+sort!(df_ACS_hh, [:YEAR, :valueh, :rentgrs]);
+scatter(df_ACS_hh.valueh[(df_ACS_hh.YEAR .== 2005) .& (df_ACS_hh.ownershp .== 1)], 
+xlabel = "No. of the sample obs",
+ylabel = "House value",
+title = "Scatter plot of sorted house value 2005",
+legend=false)
+savefig(dir_out * "Sorted house value 2005.pdf");
+
+
+scatter(df_ACS_hh.valueh[(df_ACS_hh.YEAR .== 2010) .& (df_ACS_hh.ownershp .== 1)], 
+xlabel = "No. of the sample obs",
+ylabel = "House value",
+title = "Scatter plot of sorted house value 2010",
+legend=false)
+savefig(dir_out * "Sorted house value 2010.pdf");
+
+insertcols!(df_ACS_hh, ncol(df_ACS_hh)+1, :valueh_log => log.(df_ACS_hh.valueh));
+
+include(dir_functions * "R2_comparison.jl");
+R2_comparison = r2_compare();
+sort!(R2_comparison, :sample)
+f = FDist(1,nrow(df_regression) - 8)
+quantile(f, 1 - 0.25)
+
+insertcols!(R2_comparison, :dif_levels => ((repeat(R2_comparison.levels[1:3], 8) .- R2_comparison.levels) * 8) ./ (1 .- repeat(R2_comparison.levels[1:3], 8)))
+insertcols!(R2_comparison, :dif_logs => ((repeat(R2_comparison.logs[1:3], 8) .- R2_comparison.logs) * 8) ./ (1 .- repeat(R2_comparison.logs[1:3], 8)))
 
 ## Match ASEC to ACS observations
 
