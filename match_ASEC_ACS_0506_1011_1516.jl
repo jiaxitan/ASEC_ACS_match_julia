@@ -276,12 +276,19 @@ insertcols!(df_ACS_hh, ncol(df_ACS_hh)+1, :valueh_log => log.(df_ACS_hh.valueh))
 
 include(dir_functions * "R2_comparison.jl");
 R2_comparison = r2_compare();
-sort!(R2_comparison, :sample)
-f = FDist(1,nrow(df_regression) - 8)
-quantile(f, 1 - 0.25)
 
-insertcols!(R2_comparison, :dif_levels => ((repeat(R2_comparison.levels[1:3], 8) .- R2_comparison.levels) * 8) ./ (1 .- repeat(R2_comparison.levels[1:3], 8)))
-insertcols!(R2_comparison, :dif_logs => ((repeat(R2_comparison.logs[1:3], 8) .- R2_comparison.logs) * 8) ./ (1 .- repeat(R2_comparison.logs[1:3], 8)))
+f = FDist(1,8)
+quantile(f, 1 - 0.05)
+CSV.write(dir_out * "valueh_regression.csv", R2_comparison);
+
+sort!(R2_comparison, :regressors);
+insertcols!(R2_comparison, :F_levels => ((R2_comparison.RSS_levels .- repeat(R2_comparison.RSS_levels[1:3], 9)) .* (R2_comparison.n .- 8)) ./ (repeat(R2_comparison.RSS_levels[1:3], 9) .* 1))
+insertcols!(R2_comparison, :F_logs => ((R2_comparison.RSS_logs .- repeat(R2_comparison.RSS_logs[1:3], 9)) .* (R2_comparison.n .- 8)) ./ (repeat(R2_comparison.RSS_logs[1:3],9) .* 1))
+insertcols!(R2_comparison, :F_critical => quantile.(FDist.(1, R2_comparison.n .- 8), 1-0.05))
+R2_comparison[R2_comparison.regressors .== "None", :F_levels] .= ((R2_comparison.RSS_levels[R2_comparison.regressors .== "None",:] .- R2_comparison.RSS_levels[1:3]) .* (R2_comparison.n[R2_comparison.regressors .== "None", :] .- 8)) ./ (R2_comparison.RSS_levels[1:3] .* 6)
+R2_comparison[R2_comparison.regressors .== "None", :F_logs] .= ((R2_comparison.RSS_logs[R2_comparison.regressors .== "None",:] .- R2_comparison.RSS_logs[1:3]) .* (R2_comparison.n[R2_comparison.regressors .== "None", :] .- 8)) ./ (R2_comparison.RSS_logs[1:3] .* 6)
+R2_comparison[R2_comparison.regressors .== "None", :F_critical] .= quantile.(FDist.(6, R2_comparison.n[R2_comparison.regressors .== "None", :] .- 8), 1-0.05)
+sort!(R2_comparison, :sample);
 
 ## Match ASEC to ACS observations
 
