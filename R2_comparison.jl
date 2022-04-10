@@ -16,7 +16,7 @@ function r2_compare()
 
                 push!(R2_comparison, [regressors_levels[x-1] y r2(regression_levels) r2(regression_logs) RSS_levels RSS_logs nrow(df_regression)]);
             elseif x == 0
-                regression_logs = reg(df_regression, term("valueh_log") ~ sum(term.(regressors_logs)));
+                regression_logs = lm(df_regression, term("valueh_log") ~ sum(term.(regressors_logs)));
                 RSS_logs = sum((df_regression.valueh_log .- predict(regression_logs, df_regression)).^2);
                 regression_levels = reg(df_regression, term("valueh") ~ sum(term.(regressors_levels)));
                 RSS_levels = sum((df_regression.valueh .- predict(regression_levels, df_regression)).^2);
