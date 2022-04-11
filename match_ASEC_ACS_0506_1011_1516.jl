@@ -24,7 +24,7 @@ dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/ASEC_AC
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
 fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
 file_ASEC       = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_00002.csv";
-file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00009.csv";
+file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00010.csv";
 file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 
 include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
@@ -187,7 +187,8 @@ ACS_ASEC_inc_earned_person!(df_ACS_sample)
 
 # Collapse at household level
 ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
-df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY_name_state_county=>first=>:county_name_state_county, :COUNTY2_name_state_county=>first=>:county2_name_state_county, :COUNTYFIPS_recode=>first=>:county, :COUNTYFIPS2=>first=>:county2, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
+df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, 
+:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
 insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
 filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
 df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
@@ -281,7 +282,6 @@ f = FDist(1,8)
 quantile(f, 1 - 0.05)
 CSV.write(dir_out * "valueh_regression.csv", R2_comparison);
 
-sort!(R2_comparison, :regressors);
 insertcols!(R2_comparison, :F_levels => ((R2_comparison.RSS_levels .- repeat(R2_comparison.RSS_levels[1:3], 9)) .* (R2_comparison.n .- 8)) ./ (repeat(R2_comparison.RSS_levels[1:3], 9) .* 1))
 insertcols!(R2_comparison, :F_logs => ((R2_comparison.RSS_logs .- repeat(R2_comparison.RSS_logs[1:3], 9)) .* (R2_comparison.n .- 8)) ./ (repeat(R2_comparison.RSS_logs[1:3],9) .* 1))
 insertcols!(R2_comparison, :F_critical => quantile.(FDist.(1, R2_comparison.n .- 8), 1-0.05))
@@ -289,6 +289,8 @@ R2_comparison[R2_comparison.regressors .== "None", :F_levels] .= ((R2_comparison
 R2_comparison[R2_comparison.regressors .== "None", :F_logs] .= ((R2_comparison.RSS_logs[R2_comparison.regressors .== "None",:] .- R2_comparison.RSS_logs[1:3]) .* (R2_comparison.n[R2_comparison.regressors .== "None", :] .- 8)) ./ (R2_comparison.RSS_logs[1:3] .* 6)
 R2_comparison[R2_comparison.regressors .== "None", :F_critical] .= quantile.(FDist.(6, R2_comparison.n[R2_comparison.regressors .== "None", :] .- 8), 1-0.05)
 sort!(R2_comparison, :sample);
+CSV.write(dir_out * "valueh_regression.csv", R2_comparison);
+
 
 ## Match ASEC to ACS observations
 
@@ -296,7 +298,7 @@ include(dir_functions * "ASEC_ACS_match_county.jl")
 include(dir_functions * "ASEC_ACS_match_state.jl")
 include(dir_functions * "ASEC_ACS_match.jl")
 matching_set = [:grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex];
-const k_NN = 10;
+const k_NN = 1;
 
 # Prepare ASEC and ACS data
 
@@ -439,10 +441,71 @@ include(dir_functions * "inc_valueh_rentgrs_regressivity.jl");
 fig2_dir_out = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Engel_curves/";
 
 # A. ACS data
-df_owners_mean = engel_owners_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
-df_renters_mean = engel_renters_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean = engel_owners_data_percentiles(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_renters_mean = engel_renters_data_percentiles(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
 
-p1 = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2005/2006)");
+p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2010/2011)")
+
+df_owners_median = engel_owners_data_percentiles_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_renters_median = engel_renters_data_percentiles_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+
+p1_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ACS, 2010/2011)")
+#=
+scatter(df_owners_median.log_grossinc_median, df_owners_median.log_valueh_median,
+    label = "home value median",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (10.5,14.5),
+    aspect_ratio=:equal)
+scatter!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean,
+    label = "home value mean (& matched mean)",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (10.5,14.5),
+    aspect_ratio=:equal)
+plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean_predict_beta1,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal)
+#title!("ASEC new benchmark 2010/2011 owners")
+p1 = annotate!(12.0,13.7, Plots.text("Homothetic", 10, :dark, rotation = 45 ))
+
+scatter(df_renters_median.log_grossinc_median, df_renters_median.log_rentgrs_median,
+    label = "gross rent median",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (5,9),
+    aspect_ratio=:equal)
+scatter!(df_renters_mean.log_grossinc_mean, df_renters_mean.log_rentgrs_mean,
+    label = "gross rent mean (& matched mean)",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (5,9),
+    aspect_ratio=:equal)
+plot!(df_renters_mean.log_grossinc_mean, df_renters_mean.log_rentgrs_mean_predict_beta1,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal)
+#title!("ASEC new benchmark 2010/2011 renters")
+p12 = annotate!(12.0, 8.2, Plots.text("Homothetic", 10, :dark, rotation = 45 ))
+    
+plot(p1, p12, layout = (1,2), size = (800,500))
+title!("ASEC benchmark 10/11")
+savefig(fig2_dir_out * "ASEC new benchmark 2010_11 mean_median comparison_matched mean.pdf");
+=#
+df_owners_median = engel_proptax_data_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+p1_proptx = proptx_plot(df_owners_median, "Property Tax Engel Curves (ACS, 2010/2011)")
+
 
 # B. 1st matching
 matching_set = [:grossinc, :size, :age, :unitsstr_recode, :race_recode, :educ_recode, :sex];
@@ -451,63 +514,101 @@ df_ACS_hh_match_county.race_recode[df_ACS_hh_match_county.race_recode .!= 1] .= 
 df_ASEC_hh_match_state.race_recode[df_ASEC_hh_match_state.race_recode .!= 1] .= 2;
 df_ACS_hh_match_state.race_recode[df_ACS_hh_match_state.race_recode .!= 1] .= 2;
 
-df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+df_ASEC_hh_match_0506_final = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
 insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
-df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_mean;
+df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_mean;
+df_owners_mean = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final, 10);
+df_renters_mean = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final, 10);
 
-p2_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC ALL, 2005/2006)");
+p2_mean = engel_plot_median(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC ALL, 2010/2011)");
 
 df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
 df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
-df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+df_owners_median = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final, 10);
+df_renters_median = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final, 10);
 
-p2_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC ALL, 2005/2006)");
+p2_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC ALL, 2010/2011)");
+
+insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final.ACS_proptax_median);
+df_owners_median = engel_proptax_data_median(df_ASEC_hh_match_0506_final, 10);
+
+p2_proptx = proptx_plot(df_owners_median, "Property Tax Engel Curves (ASEC ALL, 2010/2011)")
+
 
 # C. 2nd matching - no recodes
-matching_set = [:grossinc, :size, :age, :unitsstr_recode];
+matching_set = [:grossinc, :educ_recode, :unitsstr_recode];
 
-df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+df_ASEC_hh_match_0506_final2 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
-insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
-insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
-df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :valueh => df_ASEC_hh_match_0506_final2.ACS_valueh_mean);
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final2.ACS_rentgrs_mean);
+df_ASEC_hh_match_0506_final2.valueh = df_ASEC_hh_match_0506_final2.ACS_valueh_mean;
+df_ASEC_hh_match_0506_final2.rentgrs = df_ASEC_hh_match_0506_final2.ACS_rentgrs_mean;
+df_owners_mean = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
+df_renters_mean = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
 
-p3_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC NO CODE, 2005/2006)");
+p3_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
 
-df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
-df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
-df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+df_ASEC_hh_match_0506_final2.valueh = df_ASEC_hh_match_0506_final2.ACS_valueh_median;
+df_ASEC_hh_match_0506_final2.rentgrs = df_ASEC_hh_match_0506_final2.ACS_rentgrs_median;
+# df_owners_mean = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
+# df_renters_mean = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
+df_owners_median = engel_owners_data_percentiles_median(df_ASEC_hh_match_0506_final2, 10);
+df_renters_median = engel_renters_data_percentiles_median(df_ASEC_hh_match_0506_final2, 10);
 
-p3_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC NO CODE, 2005/2006)");
+p3_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
+
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final2.ACS_proptax_median);
+df_owners_median = engel_proptax_data_median(df_ASEC_hh_match_0506_final2, 10);
+
+p3_proptx = proptx_plot(df_owners_median, "Property Tax Engel Curves (ASEC new, 2010/2011)")
+
 
 # D. 3rd matching - permanent income
-matching_set = [:grossinc_potential, :size, :unitsstr_recode];
+matching_set = [:grossinc_potential];
 
-df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+df_ASEC_hh_match_0506_final3 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
-insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
-insertcols!(df_ASEC_hh_match_0506_final, size(df_ASEC_hh_match_0506_final, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
-df_owners_mean = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_mean = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :valueh => df_ASEC_hh_match_0506_final3.ACS_valueh_mean);
+insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final3.ACS_rentgrs_mean);
+df_ASEC_hh_match_0506_final3.valueh = df_ASEC_hh_match_0506_final3.ACS_valueh_mean;
+df_ASEC_hh_match_0506_final3.rentgrs = df_ASEC_hh_match_0506_final3.ACS_rentgrs_mean;
+df_owners_mean = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
+df_renters_mean = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 
-p4_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC PERM. INC, 2005/2006)");
+p4_mean = engel_plot_median(df_owners_mean, df_renters_mean, "Housing Engel Curves (ASEC perm. INC, 2010/2011)");
 
-df_ASEC_hh_match_0506_final.valueh = df_ASEC_hh_match_0506_final.ACS_valueh_median;
-df_ASEC_hh_match_0506_final.rentgrs = df_ASEC_hh_match_0506_final.ACS_rentgrs_median;
-df_owners_median = engel_owners_data(df_ASEC_hh_match_0506_final, 10);
-df_renters_median = engel_renters_data(df_ASEC_hh_match_0506_final, 10);
+df_ASEC_hh_match_0506_final3.valueh = df_ASEC_hh_match_0506_final3.ACS_valueh_median;
+df_ASEC_hh_match_0506_final3.rentgrs = df_ASEC_hh_match_0506_final3.ACS_rentgrs_median;
+df_owners_median = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
+df_renters_median = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 
-p4_median = engel_plot(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC PERM. INC, 2005/2006)");
+p4_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC perm. INC, 2010/2011)");
+
+insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final3.ACS_proptax_median);
+df_owners_median = engel_proptax_data_median(df_ASEC_hh_match_0506_final3, 10);
+
+p4_proptx = proptx_plot(df_owners_median, "Property Tax Engel Curves (ASEC only INC, 2010/2011)")
+
 
 # Combine plots
-plot(p1, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
-savefig(fig2_dir_out * "Weighted_Mean_Engel_curve_ACS_homevalues_rents.pdf");
+plot(p1_mean, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
+savefig(fig2_dir_out * "Weighted_Mean_Engel_curve_ACS_new_benchmark_median_1011.pdf");
 
-plot(p1, p2_median, p3_median, p4_median, layout = (2,2), size = (1200,800))
-savefig(fig2_dir_out * "Weighted_Median_Engel_curve_ACS_homevalues_rents.pdf");
+plot(p1_mean, p3_mean, layout = (2,1), size = (600,800))
+savefig(fig2_dir_out * "k=1 mean.pdf");
+
+
+plot(p1_median, p2_median, p3_median, p4_median, layout = (2,2), size = (1200,800))
+savefig(fig2_dir_out * "Demeaned_Weighted_Median_Engel_curve_ACS_new_benchmark_percentilesMedian_1011.pdf");
+
+plot(p1_median, p3_median, layout = (2,1), size = (600,800))
+savefig(fig2_dir_out * "k=1 median.pdf");
+
+plot(p1_proptx, p2_proptx, p3_proptx, p4_proptx, layout = (2,2), size = (1120,800))
+savefig(fig2_dir_out * "Property_tax_Engel.pdf");
+
+
