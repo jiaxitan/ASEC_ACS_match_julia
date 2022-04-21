@@ -50,8 +50,8 @@ function ASEC_ACS_match_state!(df_ASEC, df_ACS, k, matching_elements)
                 continue
             end
 
-            array_ASEC_tmp[:, 2:end] = (array_ASEC_tmp[:, 2:end] .- transpose(ASEC_mean))./transpose(ASEC_std);
-            array_ACS_tmp[:, 5:end] = (array_ACS_tmp[:, 5:end] .- transpose(ACS_mean))./transpose(ACS_std);
+            array_ASEC_tmp[:, 2:end] = array_ASEC_tmp[:, 2:end] ./transpose(ASEC_std);
+            array_ACS_tmp[:, 5:end] = array_ACS_tmp[:, 5:end] ./transpose(ACS_std);
 
             array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 5:end]))
             kdtree_county = KDTree(array_ACS_tmp_transpose)
