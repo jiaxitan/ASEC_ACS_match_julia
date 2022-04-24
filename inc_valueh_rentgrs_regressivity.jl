@@ -93,7 +93,7 @@ function engel_owners_data_state(df, code)
     df_owners = filter(r -> (r[:ownershp] .== code), df);
     inc_vingtiles!(df_owners);
     gdf_owners = groupby(df_owners, [:statename, :grossinc_vingtile]);
-    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean, nrow);
+    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean, :txrate => mean, nrow);
     sort!(df_owners_mean, [:statename, :grossinc_vingtile]);
 
     df_owners_mean[:, :log_grossinc_mean] = log.(df_owners_mean[:, :grossinc_mean]);

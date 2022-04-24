@@ -575,7 +575,7 @@ plot(p1, p12, layout = (1,2), size = (800,500))
 title!("ASEC benchmark 10/11")
 savefig(fig2_dir_out * "ASEC new benchmark 2010_11 mean_median comparison_matched mean.pdf");
 =#
-df_owners_mean = engel_proptax_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean_ACS = engel_proptax_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
 p1_proptx = proptx_plot(df_owners_mean, "Property Tax Engel Curves (ACS, 2010/2011)")
 
 df_owners_median = engel_proptax_data_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
@@ -653,16 +653,9 @@ vscodedisplay(df_k1[:,2:end] .!= df_k9[:,2:end])
 
 p3_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
 
-df_owners_mean = engel_proptax_data(df_ASEC_hh_match_0506_final2, 10);
-
-proptx_plot(df_owners_mean, "Property Tax Engel Curves (ASEC benchmark, 2010/2011)")
-p3_proptx = proptx_plot(df_owners_mean, "Property Tax Engel Curves (ASEC benchmark, 2010/2011)")
-
-df_ASEC_hh_match_0506_final2.proptx99_recode = df_ASEC_hh_match_0506_final2.ACS_proptax_median;
-df_owners_median = engel_proptax_data_median(df_ASEC_hh_match_0506_final2, 10);
-
-proptx_plot_median(df_owners_median, "Property Tax Engel Curves (ASEC benchmark, 2010/2011)")
-p3_proptx = proptx_plot_median(df_owners_median, "Property Tax Engel Curves (ASEC benchmark, 2010/2011)")
+df_owners_mean_ASEC = engel_proptax_data(df_ASEC_hh_match_0506_final2, 10);
+proptx_plot_state(df_owners_mean_ACS, df_owners_mean_ASEC, "Propty tax Engel, National")
+savefig(fig2_dir_out * "Property_Tax_k1.pdf");
 
 # D. 3rd matching - permanent income
 matching_set = [:grossinc_potential];
@@ -690,7 +683,6 @@ df_owners_median = engel_proptax_data_median(df_ASEC_hh_match_0506_final3, 10);
 
 p4_proptx = proptx_plot(df_owners_median, "Property Tax Engel Curves (ASEC only INC, 2010/2011)")
 
-
 # Combine plots
 plot(p1_mean, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
 savefig(fig2_dir_out * "Weighted_Mean_Engel_curve_ACS_new_benchmark_median_1011.pdf");
@@ -708,8 +700,65 @@ savefig(fig2_dir_out * "k=1 median.pdf");
 plot(p1_proptx_median, p3_proptx, layout = (2,1), size = (600,800))
 savefig(fig2_dir_out * "Median_Property_tax_NEWcounty.pdf");
 
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :txrate =>  df_ASEC_hh_match_0506_final2.proptx99_recode ./ df_ASEC_hh_match_0506_final2.valueh);
+df_ASEC_hh_match_0506_final2[df_ASEC_hh_match_0506_final2.valueh .== 0, :txrate] .= 0;
+insertcols!(df_ACS_hh, size(df_ACS_hh, 2)+1, :txrate => df_ACS_hh.proptx99_recode ./ df_ACS_hh.valueh);
+df_ACS_hh[df_ACS_hh.valueh .== 0, :txrate] .= 0;
 
-df_valueh_state_ACS, df_proptx_state_ACS = engel_owners_data_state(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-df_valueh_state_ASEC, df_proptx_state_ASEC = engel_owners_data_state(df_ASEC_hh_match_0506_final2, 10);
+df_owners_mean_ACS = engel_owners_data_state(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean_ASEC = engel_owners_data_state(df_ASEC_hh_match_0506_final2, 10);
 
-proptx_plot_compare!(df_proptx_state_ACS, df_proptx_state_ASEC, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/state engel k=9/")
+proptx_plot_compare!(df_owners_mean_ACS, df_owners_mean_ASEC, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/state engel k=1/");
+
+s1 = "New Jersey"
+s2 = "Louisiana"
+
+
+p_ACS = scatter(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :txrate_mean] .* 100,
+    label = s1,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (0, 5))
+scatter!(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :txrate_mean] .* 100,
+    label = s2,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    yaxis="Property tax rate (%)",
+    xlim = (9,13),
+    ylim = (0, 5),
+    title = "NJ vs. LA ACS")
+plot!(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_grossinc_mean .- 3.0,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal,
+    title = "NJ vs. LA ACS") 
+
+p_ASEC = scatter(df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s1, :log_grossinc_mean], df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s1, :txrate_mean] .* 100,
+    label = s1,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (0, 5))
+scatter!(df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s2, :log_grossinc_mean], df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s2, :txrate_mean] .* 100,
+    label = s2,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    yaxis="Property tax rate (%)",
+    xlim = (9,13),
+    ylim = (0, 5),
+    title = "NJ vs. LA ASEC")
+plot!(df_owners_mean_ASEC.log_grossinc_mean, df_owners_mean_ASEC.log_grossinc_mean .- 3.0,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal,
+    title = "NJ vs. LA ASEC")
+
+
+plot(p_ACS, p_ASEC, layout = (1,2))
+savefig(fig2_dir_out * "nj la tax rate.pdf");
+
