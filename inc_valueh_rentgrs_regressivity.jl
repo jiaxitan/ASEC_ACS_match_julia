@@ -1,3 +1,4 @@
+### Prepares for and plots engel curves
 
 function inc_vingtiles!(df)
 
@@ -62,138 +63,8 @@ function inc_percentiles!(df)
     insertcols!(df, ncol(df) + 1, :grossinc_percentile => searchsortedfirst.(Ref(p), df.grossinc));
 
 end
-#=
-function valueh_percentiles!(df)
-    sort!(df, :valueh);
-    cutoff = (1:99) .* 0.01;
-    p = quantile(df.valueh, cutoff; sorted = true);
-    insertcols!(df, ncol(df) + 1, :valueh_percentile => searchsortedfirst.(Ref(p), df.valueh));
 
-end
-=#
-
-# home value median approach, vingtiles
-function engel_owners_data_median(df, code)
-
-    df_owners = filter(r -> (r[:ownershp] .== code), df);
-    inc_vingtiles!(df_owners);
-    gdf_owners = groupby(df_owners, [:grossinc_vingtile]);
-    df_owners_median = combine(gdf_owners, :grossinc => median, :valueh => median, nrow);
-    sort!(df_owners_median, :grossinc_vingtile);
-    df_owners_median[:, :log_grossinc_median] = log.(df_owners_median[:, :grossinc_median]);
-    df_owners_median[:, :log_valueh_median]  = log.(df_owners_median[:, :valueh_median]);
-    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
-
-    df_owners_median[:, :log_valueh_median_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_median];
-    
-    return df_owners_median
-end
-
-function engel_owners_data_state(df, code)
-    df_owners = filter(r -> (r[:ownershp] .== code), df);
-    inc_vingtiles!(df_owners);
-    gdf_owners = groupby(df_owners, [:statename, :grossinc_vingtile]);
-    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean, :txrate => mean, nrow);
-    sort!(df_owners_mean, [:statename, :grossinc_vingtile]);
-
-    df_owners_mean[:, :log_grossinc_mean] = log.(df_owners_mean[:, :grossinc_mean]);
-    df_owners_mean[:, :log_valueh_mean]  = log.(df_owners_mean[:, :valueh_mean]);
-    df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx99_recode_mean]);
-
-    #insertcols!(df_owners_mean, ncol(df_owners_mean) + 1, :valueh_inc => df_owners_mean.log_valueh_mean ./ df_owners_mean.log_grossinc_mean);
-    #insertcols!(df_owners_mean, ncol(df_owners_mean) + 1, :proptx_inc => df_owners_mean.log_proptx_mean ./ df_owners_mean.log_grossinc_mean);
-
-    #df_value = unstack(df_owners_mean, :statename, :grossinc_vingtile, :log_valueh_mean, renamecols=x->Symbol(:incbin_, x));
-    #df_proptx = unstack(df_owners_mean, :statename, :grossinc_vingtile, :log_proptx_mean, renamecols=x->Symbol(:incbin_, x));
-
-    return df_owners_mean
-end
-#=
-df_owners = filter(r -> (r[:ownershp] .== 1), df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :]);
-df = copy(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :])
-inc_percentiles!(df_owners);
-df_owners_ACS = combine(groupby(df_owners, :grossinc_percentile), :grossinc => mean, :grossinc => median, :valueh => mean, :valueh => median, nrow);
-insert!.(eachcol(df_owners_ACS), 20, [20, df_owners_ACS[19, :grossinc_mean], df_owners_ACS[19, :grossinc_median], df_owners_ACS[19, :valueh_mean], df_owners_ACS[19, :valueh_median], df_owners_ACS[19, :nrow]])
-insert!.(eachcol(df_owners_ACS), 29, [29, df_owners_ACS[28, :grossinc_mean], df_owners_ACS[28, :grossinc_median], df_owners_ACS[28, :valueh_mean], df_owners_ACS[28, :valueh_median], df_owners_ACS[28, :nrow]])
-vscodedisplay(df_owners_ACS)
-vscodedisplay(df_owners[:, [:grossinc, :grossinc_percentile, :valueh]])
-
-
-
-df_owners_ASEC = filter(r -> (r[:ownershp] .== 10), df_ASEC_hh_match_0506_final2);
-inc_percentiles!(df_owners_ASEC);
-vscodedisplay(df_owners_ASEC[:, [:grossinc, :grossinc_percentile, :valueh]])
-
-df_owners_ASEC = combine(groupby(df_owners_ASEC, :grossinc_percentile), :grossinc => mean, :grossinc => median, :valueh => mean, :valueh => median, nrow);
-vscodedisplay(df_owners_ASEC)
-
-dif_grossinc = DataFrame(mean_dif = df_owners_ASEC.grossinc_mean .- df_owners_ACS.grossinc_mean, median_dif = df_owners_ASEC.grossinc_median .- df_owners_ACS.grossinc_median)
-dif_valueh = DataFrame(mean_dif = df_owners_ASEC.valueh_mean .- df_owners_ACS.valueh_mean, median_dif = df_owners_ASEC.valueh_median .- df_owners_ACS.valueh_median)
-vscodedisplay(dif_valueh)
-
-@df df_owners[df_owners.grossinc_percentile .== 80, :] density(label = "ACS", :valueh)
-@df df_owners_ASEC[df_owners_ASEC.grossinc_percentile .== 80, :] density!(label = "ASEC", :valueh)
-xlims!(0, 1000000)
-sum(df_owners.grossinc .> maximum(df_owners_ASEC.grossinc))
-=#
-
-#=
-function engel_grossinc_data_median(df, code)
-
-    df_owners = filter(r -> (r[:ownershp] .== code), df);
-    valueh_percentiles!(df_owners);
-    gdf_owners = groupby(df_owners, [:valueh_percentile]);
-    df_owners_median = combine(gdf_owners, :valueh => median => :x_valueh_median, :grossinc => median => :grossinc_median, nrow);
-    # sort!(df_owners_median, :grossinc_percentile);
-    df_owners_median[:, :log_x_valueh_median] = log.(df_owners_median[:, :x_valueh_median]);
-    df_owners_median[:, :log_grossinc_median]  = log.(df_owners_median[:, :grossinc_median]);
-    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
-
-    #df_owners_median[:, :log_proptx_median_predict_beta1] = -3.3 .+ df_owners_median[:, :log_grossinc_median];
-    
-    return df_owners_median
-end
-function engel_grossinc_data_mean(df, code)
-
-    df_owners = filter(r -> (r[:ownershp] .== code), df);
-    valueh_percentiles!(df_owners);
-    gdf_owners = groupby(df_owners, [:valueh_percentile]);
-    df_owners_mean = combine(gdf_owners, :valueh => mean => :x_valueh_mean, :grossinc => mean => :grossinc_mean, nrow);
-    # sort!(df_owners_median, :grossinc_percentile);
-    df_owners_mean[:, :log_x_valueh_mean] = log.(df_owners_mean[:, :x_valueh_mean]);
-    df_owners_mean[:, :log_grossinc_mean]  = log.(df_owners_mean[:, :grossinc_mean]);
-    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
-
-    #df_owners_median[:, :log_proptx_median_predict_beta1] = -3.3 .+ df_owners_median[:, :log_grossinc_median];
-    
-    return df_owners_mean
-end
-=#
-#=
-df_owners_median = engel_grossinc_data_median(df_ASEC_hh_match_0506_final2, 10);
-df_owners_mean = engel_grossinc_data_mean(df_ASEC_hh_match_0506_final2, 10);
-
-
-scatter(df_owners_median.log_x_valueh_median, df_owners_median.log_grossinc_median,
-    label = "median",
-    legend = :topleft,
-    foreground_color_legend = nothing,
-    xaxis="Log home value",
-    ylim = (9,13),
-    xlim = (10.5,14.5),
-    aspect_ratio=:equal)
-scatter!(df_owners_mean.log_x_valueh_mean, df_owners_mean.log_grossinc_mean,
-    label = "mean",
-    legend = :topleft,
-    foreground_color_legend = nothing,
-    xaxis="Log home value",
-    ylim = (9,13),
-    xlim = (10.5,14.5),
-    aspect_ratio=:equal)
-
-    =#
-    
-# property tax median approach, percentiles
+# Median property tax of each income bin, percentiles
 function engel_proptax_data_median(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -210,6 +81,7 @@ function engel_proptax_data_median(df, code)
     return df_owners_median
 end
 
+# Mean property tax of each income bin, percentiles
 function engel_proptax_data(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -226,7 +98,24 @@ function engel_proptax_data(df, code)
     return df_owners_mean
 end
 
-# home value mean approach, vingtiles
+# Median home value of each income bin, vingtiles
+function engel_owners_data_median(df, code)
+
+    df_owners = filter(r -> (r[:ownershp] .== code), df);
+    inc_vingtiles!(df_owners);
+    gdf_owners = groupby(df_owners, [:grossinc_vingtile]);
+    df_owners_median = combine(gdf_owners, :grossinc => median, :valueh => median, nrow);
+    sort!(df_owners_median, :grossinc_vingtile);
+    df_owners_median[:, :log_grossinc_median] = log.(df_owners_median[:, :grossinc_median]);
+    df_owners_median[:, :log_valueh_median]  = log.(df_owners_median[:, :valueh_median]);
+    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
+
+    df_owners_median[:, :log_valueh_median_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_median];
+    
+    return df_owners_median
+end
+
+# Meah home value of each income bin, vingtiles
 function engel_owners_data(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -243,7 +132,7 @@ function engel_owners_data(df, code)
     return df_owners_mean
 end
 
-# home value meadian approach, percentiles
+# Median home value of each income bin, percentiles
 function engel_owners_data_percentiles_median(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -260,7 +149,7 @@ function engel_owners_data_percentiles_median(df, code)
     return df_owners_median
 end
 
-# home value mean approach, percentiles
+# Mean home value of each income bin, percentiles
 function engel_owners_data_percentiles(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -277,7 +166,7 @@ function engel_owners_data_percentiles(df, code)
     return df_owners_mean
 end
 
-# gross rent median approach, vintiles
+# Median gross rent of each income bin, vintiles
 function engel_renters_data_median(df, code)
 
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
@@ -294,7 +183,7 @@ function engel_renters_data_median(df, code)
     return df_renters_median
 end
 
-# gross rent mean approach, vintiles
+# Mean gross rent of each income bin, vintiles
 function engel_renters_data(df, code)
 
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
@@ -311,7 +200,7 @@ function engel_renters_data(df, code)
     return df_renters_mean
 end
 
-# gross rent median apporach, percentiles
+# Median gross rent of each income bin, percentiles
 function engel_renters_data_percentiles_median(df, code)
 
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
@@ -328,7 +217,7 @@ function engel_renters_data_percentiles_median(df, code)
     return df_renters_median
 end
 
-# gross rent mean approach, percentiles
+# Mean gross rent of each income bin, percentiles
 function engel_renters_data_percentiles(df, code)
 
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
@@ -345,7 +234,22 @@ function engel_renters_data_percentiles(df, code)
     return df_renters_mean
 end
 
-# plot property tax, mean approach
+# Mean home value and property tax by state, vingtiles
+function engel_owners_data_state(df, code)
+    df_owners = filter(r -> (r[:ownershp] .== code), df);
+    inc_vingtiles!(df_owners);
+    gdf_owners = groupby(df_owners, [:statename, :grossinc_vingtile]);
+    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean, :txrate => mean, nrow);
+    sort!(df_owners_mean, [:statename, :grossinc_vingtile]);
+
+    df_owners_mean[:, :log_grossinc_mean] = log.(df_owners_mean[:, :grossinc_mean]);
+    df_owners_mean[:, :log_valueh_mean]  = log.(df_owners_mean[:, :valueh_mean]);
+    df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx99_recode_mean]);
+
+    return df_owners_mean
+end
+
+# Plot mean property tax of each income bin 
 function proptx_plot(df_owners_mean, title)
 
     scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_proptx_mean,
@@ -367,7 +271,8 @@ function proptx_plot(df_owners_mean, title)
     return p11
 end
 
-function proptx_plot_state(df_owners_mean_ACS, df_owners_mean_ASEC, title)
+# Plot mean property tax with ACS and ASEC data 
+function proptx_plot(df_owners_mean_ACS, df_owners_mean_ASEC, title)
 
     p11 = scatter(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_proptx_mean,
     label = "ACS",
@@ -394,17 +299,19 @@ function proptx_plot_state(df_owners_mean_ACS, df_owners_mean_ASEC, title)
     return p11
 end
 
+# Plot mean property tax with ACS and ASEC data for each state. Save plots in outfile.
 function proptx_plot_compare!(df_owners_mean_ACS, df_owners_mean_ASEC, outfile)
     state = unique(df_owners_mean_ACS.statename);
     for s in state
-        proptx_plot_state(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s, :], df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s, :], "Property tax Engel, " * s);
+        proptx_plot(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s, :], df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s, :], "Property tax Engel, " * s);
         savefig(outfile * s);
     end
 end
 
-function proptx_plot_median(df_owners_mean, title)
+# Plot median property tax for each income bin
+function proptx_plot_median(df_owners_median, title)
 
-    scatter(df_owners_mean.log_grossinc_median, df_owners_mean.log_proptx_median,
+    scatter(df_owners_median.log_grossinc_median, df_owners_median.log_proptx_median,
     label = "Log Property Tax",
     legend = :topleft,
     foreground_color_legend = nothing,
@@ -412,18 +319,17 @@ function proptx_plot_median(df_owners_mean, title)
     xlim = (9,13),
     ylim = (6,10),
     aspect_ratio=:equal)
-    plot!(df_owners_mean.log_grossinc_median, df_owners_mean.log_proptx_median_predict_beta1,
+    plot!(df_owners_median.log_grossinc_median, df_owners_median.log_proptx_median_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
     aspect_ratio=:equal)
     p11 = annotate!(12.0,9, Plots.text("Homothetic", 10, :dark, rotation = 45 ), title = title)
     
-
     return p11
 end
 
-#plot home value and gross rent, mean approach
+# Plot mean home value and gross rent
 function engel_plot(df_owners_mean, df_renters_mean, title)
 
     scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean,
@@ -470,10 +376,10 @@ function engel_plot(df_owners_mean, df_renters_mean, title)
     return p1
 end
 
-# plot home value and gross rent, median approach
-function engel_plot_median(df_owners_mean, df_renters_mean, title)
+# Plot median home value and property tax for each income bin
+function engel_plot_median(df_owners_median, df_renters_median, title)
 
-    scatter(df_owners_mean.log_grossinc_median, df_owners_mean.log_valueh_median,
+    scatter(df_owners_median.log_grossinc_median, df_owners_median.log_valueh_median,
     label = "Log Home Value",
     legend = :topleft,
     foreground_color_legend = nothing,
@@ -481,14 +387,14 @@ function engel_plot_median(df_owners_mean, df_renters_mean, title)
     xlim = (9,13),
     ylim = (10.5,14.5),
     aspect_ratio=:equal)
-    plot!(df_owners_mean.log_grossinc_median, df_owners_mean.log_valueh_median_predict_beta1,
+    plot!(df_owners_median.log_grossinc_median, df_owners_median.log_valueh_median_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
     aspect_ratio=:equal)
     p11 = annotate!(12.0,13.7, Plots.text("Homothetic", 10, :dark, rotation = 45 ))
     
-    scatter(df_renters_mean.log_grossinc_median, df_renters_mean.log_rentgrs_median,
+    scatter(df_renters_median.log_grossinc_median, df_renters_median.log_rentgrs_median,
     label = "Log Rent",
     legend = :topleft,
     foreground_color_legend = nothing,
@@ -498,7 +404,7 @@ function engel_plot_median(df_owners_mean, df_renters_mean, title)
     seriescolor = :orange,
     aspect_ratio=:equal)
     # plot!([9.3,12.1], [5.3,8.1], line=:black, linestyle=:dash, label = "", aspect_ratio=:equal)
-    plot!(df_renters_mean.log_grossinc_median, df_renters_mean.log_rentgrs_median_predict_beta1,
+    plot!(df_renters_median.log_grossinc_median, df_renters_median.log_rentgrs_median_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
@@ -511,8 +417,8 @@ function engel_plot_median(df_owners_mean, df_renters_mean, title)
     p[2] = p11
     p[3] = p22
     p1 = plot(p..., layout=l)
-    #savefig( "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Engel_curves/" * filename)
     
-
     return p1
 end
+
+    
