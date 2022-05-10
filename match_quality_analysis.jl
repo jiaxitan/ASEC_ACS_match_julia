@@ -12,18 +12,23 @@ df_renters_mean = engel_renters_data_percentiles(df_ACS_hh[in([2010, 2011]).(df_
 
 p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2010/2011)")
 
-# Engel curves, percentiles, median
-df_owners_median = engel_owners_data_percentiles_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-df_renters_median = engel_renters_data_percentiles_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+# Engel curves, vingtiles, mean
+df_owners_mean = engel_owners_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_renters_mean = engel_renters_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
 
-p1_median = engel_plot_median(df_owners_median, df_renters_median, "Housing Engel Curves (ACS, 2010/2011)")
+p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2010/2011)")
+savefig(fig2_dir_out * "levels home value ACS.pdf");
 
 # Plot engel curves for property tax
-df_owners_mean_proptx = engel_proptax_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-p1_proptx_mean = proptx_plot(df_owners_mean_proptx, "Property Tax Engel Curves (ACS, 2010/2011)")
+p1_proptx_mean = proptx_plot(df_owners_mean, "Property Tax Engel Curves (ACS, 2010/2011)")
+savefig(fig2_dir_out * "levels prop tax ACS.pdf");
 
-df_owners_median_proptx = engel_proptax_data_median(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-p1_proptx_median = proptx_plot_median(df_owners_median_proptx, "Property Tax Engel Curves (ACS, 2010/2011)")
+# Plot engel curves for property tax rate
+p1_txrate_mean = txrate_plot(df_owners_mean, "Property Tax Rate Engel Curves (ACS, 2010/2011)")
+
+
+df_owners_mean_proptx = engel_proptax_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+p1_proptx_mean = proptx_plot_median(df_owners_median_proptx, "Property Tax Engel Curves (ACS, 2010/2011)")
 
 # Compare mean and median approach with ACS data
 #=
@@ -115,7 +120,7 @@ matching_set = [:grossinc, :educ_recode, :unitsstr_recode];
 
 df_ASEC_hh_match_0506_final2 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
 
-# Engel curves, percentiles, mean of nearest neighbors
+# Engel curves, percentiles, mean of nearest neighbors 
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :valueh => df_ASEC_hh_match_0506_final2.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final2.ACS_rentgrs_mean);
 df_owners_mean2 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
@@ -260,6 +265,31 @@ insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+
 df_ASEC_hh_match_0506_final2[df_ASEC_hh_match_0506_final2.valueh .== 0, :txrate] .= 0;
 insertcols!(df_ACS_hh, size(df_ACS_hh, 2)+1, :txrate => df_ACS_hh.proptx99_recode ./ df_ACS_hh.valueh);
 df_ACS_hh[df_ACS_hh.valueh .== 0, :txrate] .= 0;
+
+df_owners_mean_ACS = engel_owners_data_state(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean_ASEC = engel_owners_data_state(df_ASEC_hh_match_0506_final2, 10);
+
+scatter(df_owners_mean_ACS[:, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :txrate_mean] .* 100,
+    label = s1,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (0, 5))
+scatter!(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :txrate_mean] .* 100,
+    label = s2,
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    yaxis="Property tax rate (%)",
+    xlim = (9,13),
+    ylim = (0, 5),
+    title = "NJ vs. LA ACS")
+plot!(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_grossinc_mean .- 3.0,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal,
+    title = "NJ vs. LA ACS") 
 
 
 p_ACS = scatter(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :txrate_mean] .* 100,

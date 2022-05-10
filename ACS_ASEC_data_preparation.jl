@@ -8,16 +8,6 @@
 # NOTE: for ACS, split potential earnings regression by years to speed up/avoid crashes
 
 function prepare_data()
-    
-    include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
-    include(dir_functions * "ACS_ASEC_inc_earned_person.jl")
-
-    include(dir_functions * "ASEC_UNITSSTR_recode.jl")
-    include(dir_functions * "ASEC_EDUC_recode.jl")
-    include(dir_functions * "ASEC_RACE_recode.jl")
-    include(dir_functions * "ASEC_MARST_recode.jl")
-    include(dir_functions * "ASEC_COUNTY_recode.jl")
-    include(dir_functions * "ASEC_METRO_recode.jl")
 
     # Import state info
     df_state_info = CSV.read(file_state_info, DataFrame; types=[Int64, Int64, String, String, String, Int64, Int64]);
@@ -78,7 +68,7 @@ function prepare_data()
     # df_ASEC_hh[:, :grossinc_log_potential] = predict(ols_potential_earnings_ASEC);
     # df_ASEC_hh[:, :grossinc_potential] = exp.(predict(ols_potential_earnings_ASEC));
 
-    replace!(x -> x < 0 ? 1 : x, df_ASEC_hh.grossinc_potential);
+    #replace!(x -> x < 0 ? 1 : x, df_ASEC_hh.grossinc_potential);
 
     # ### OLD VERSION - too slow! see below
     # # Compute potential earnings
@@ -115,16 +105,7 @@ function prepare_data()
 
     ## Import and prepare ACS file
 
-    include(dir_functions * "ACS_UNITSSTR_recode.jl")
-    include(dir_functions * "ACS_METRO_recode.jl")
-    include(dir_functions * "ACS_RACE_recode.jl")
-    include(dir_functions * "ACS_EDUC_recode.jl")
-    include(dir_functions * "ACS_MARST_recode.jl")
-    include(dir_functions * "ACS_PROPTX99_recode.jl")
-    include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
-    include(dir_functions * "ACS_match_PUMA_county.jl")
-        #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
-
+    
     df_ACS = CSV.read(file_ACS, DataFrame);
 
     select!(df_ACS, Not([:SAMPLE, :CBSERIAL, :HHWT, :CLUSTER, :STRATA, :GQ, :PERWT, :OWNERSHPD, :RACED, :EDUCD, :WKSWORK1]));
@@ -145,7 +126,7 @@ function prepare_data()
 
     # Construct county from PUMA
     sort!(df_ACS_sample, [:YEAR, :STATEFIPS, :PUMA]);
-    ACS_match_PUMA_county!(df_ACS_sample);
+    ACS_match_PUMA_county!(df_ACS_sample, df_state_info);
 
     #=
     # Compare the share of missing counties after PUMA-county matching
@@ -203,7 +184,7 @@ function prepare_data()
     # df_ACS_hh[:, :grossinc_log_potential] = [predict(ols_potential_earnings_ACS_05_06); predict(ols_potential_earnings_ACS_10_11); predict(ols_potential_earnings_ACS_15_16)];
     # df_ACS_hh[:, :grossinc_potential] = [exp.(predict(ols_potential_earnings_ACS_05_06)); exp.(predict(ols_potential_earnings_ACS_10_11)); exp.(predict(ols_potential_earnings_ACS_15_16))];
 
-    replace!(x -> x < 0 ? 1 : x, df_ACS_hh.grossinc_potential);
+    #replace!(x -> x < 0 ? 1 : x, df_ACS_hh.grossinc_potential);
 
     # ### OLD VERSION - too slow and crashes Julia! see below
     # # Compute potential earnings
