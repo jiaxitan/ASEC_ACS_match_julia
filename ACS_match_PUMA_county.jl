@@ -20,7 +20,7 @@ function leftjoin_by_year(df, df_PUMA_county)
 
 end
 
-function ACS_match_PUMA_county!(df_ACS)
+function ACS_match_PUMA_county!(df_ACS, df_state_info)
     
     df_PUMA_county00 = HTTP.get("https://usa.ipums.org/usa/volii/2000PUMAsASCII.txt");
     df_PUMA_county00 = CSV.read(df_PUMA_county00.body,delim = " ",header = false, DataFrame);
