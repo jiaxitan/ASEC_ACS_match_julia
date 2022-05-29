@@ -96,6 +96,7 @@ df_ASEC_hh_match_0506_final1 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_cou
 # Engel curves, percentiles, mean of nearest neighbors
 insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
+insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final.ACS_proptax_median);
 df_owners_mean1 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final1, 10);
 df_renters_mean1 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final1, 10);
 
@@ -110,7 +111,6 @@ df_renters_median1 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final1
 p2_median = engel_plot_median(df_owners_median1, df_renters_median1, "Housing Engel Curves (ASEC ALL, 2010/2011)");
 
 # Engel curves for property tax, median of nearest neigbors
-insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final.ACS_proptax_median);
 # Note: whenever the engel data preparation function has _median, it's using the median of each income bin
 df_owners_median_proptx1 = engel_proptax_data_median(df_ASEC_hh_match_0506_final1, 10);
 
@@ -125,6 +125,7 @@ df_ASEC_hh_match_0506_final2 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_cou
 # Engel curves, percentiles, mean of nearest neighbors 
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :valueh => df_ASEC_hh_match_0506_final2.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final2.ACS_rentgrs_mean);
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final2.ACS_proptax_mean);
 df_owners_mean2 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
 df_renters_mean2 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
 
@@ -139,7 +140,6 @@ df_renters_median2 = engel_renters_data_percentiles_median(df_ASEC_hh_match_0506
 p3_median = engel_plot_median(df_owners_median2, df_renters_median2, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
 
 # Engel curves for property tax, mean of nearest neigbors
-insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final2.ACS_proptax_mean);
 df_owners_mean_proptx2 = engel_proptax_data(df_ASEC_hh_match_0506_final2, 10);
 
 # Plot ACS and ASEC property tax together
@@ -179,6 +179,7 @@ df_ASEC_hh_match_0506_final3 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_cou
 # Engel curves, percentiles, mean of nearest neighbors
 insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :valueh => df_ASEC_hh_match_0506_final3.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final3.ACS_rentgrs_mean);
+insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final3.ACS_proptax_median);
 df_owners_mean3 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 df_renters_mean3 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 
@@ -193,7 +194,6 @@ df_renters_median3 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final3
 p4_median = engel_plot_median(df_owners_median3, df_renters_median3, "Housing Engel Curves (ASEC perm. INC, 2010/2011)");
 
 # Engel curves for property tax, median of nearest neigbors
-insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final3.ACS_proptax_median);
 df_owners_median_proptx3 = engel_proptax_data_median(df_ASEC_hh_match_0506_final3, 10);
 
 p4_proptx = proptx_plot(df_owners_median_proptx3, "Property Tax Engel Curves (ASEC only INC, 2010/2011)")

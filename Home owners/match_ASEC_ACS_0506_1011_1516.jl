@@ -46,7 +46,7 @@ include(dir_functions * "ACS_match_PUMA_county.jl")
 df_ACS_hh, df_ASEC_hh = prepare_data();
 
 ## Evaluate share of topcoded home value
-
+#=
 # The share of allocated (altered) values indicated by the flag variable QVALUEH in each two-year sample
 valueh_topcode = DataFrame(year = [2005, 2010, 2015], Altered_cases = [sum(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :qvalueh] .== 4)/nrow(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :]), sum(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :qvalueh] .== 4)/nrow(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :]), sum(df_ACS_hh[in([2015, 2016]).(df_ACS_hh.YEAR), :qvalueh] .== 4)/ nrow(df_ACS_hh[in([2015, 2016]).(df_ACS_hh.YEAR), :])])
 
@@ -79,6 +79,7 @@ end
 
 CSV.write(dir_out * "valueh_topcodes1011.csv", state_topcodes1011);
 CSV.write(dir_out * "valueh_topcodes1516.csv", state_topcodes1516);
+=#
 
 ## Evaluate share of topcoded property tax
 
