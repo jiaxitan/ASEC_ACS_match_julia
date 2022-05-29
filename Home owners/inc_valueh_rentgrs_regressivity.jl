@@ -254,36 +254,37 @@ end
 # Plot mean property tax of each income bin 
 function proptx_plot(df_owners_mean, title)
 
-    p11 = scatter(exp.(df_owners_mean.log_grossinc_mean)./1000, exp.(df_owners_mean.log_proptx_mean)./1000,
-    label = "Property tax (thousands)",
+    p11 = scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_proptx_mean,
+    label = "Log Property Tax",
     legend = :topleft,
     foreground_color_legend = nothing,
-    xaxis="Pre-government income (thousands)",
-    xlim = (0,500),
-    ylim = (0,10),
-    title = title, 
-    aspect_ratio= 50)
-    plot!(exp.(df_owners_mean.log_grossinc_mean)./1000, exp.(df_owners_mean.log_proptx_mean_predict_beta1)./1000,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (6,10),
+    aspect_ratio=:equal)
+    plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_proptx_mean_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
-    aspect_ratio= 50)
-
+    aspect_ratio=:equal)
+    p11 = annotate!(12.0,9, Plots.text("Homothetic", 10, :dark, rotation = 45 ), title = title)
+    
     return p11
 end
 
 # Plot mean property tax rate of each income bin
 function txrate_plot(df_owners_mean, title)
 
-    p11 = scatter(exp.(df_owners_mean.log_grossinc_mean)./1000, df_owners_mean.txrate_mean.*100,
+    p11 = scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.txrate_mean.*100,
     label = "Property tax rate (%)",
     legend = :topright,
     foreground_color_legend = nothing,
-    xaxis="Pre-government income (thousands)",
-    xlim = (0,500),
+    xaxis="Log pre-government income",
+    xformatter = xi -> string(round(Int, exp(xi)/1000)) * "K",
+    xlim = (9,13),
     ylim = (0.5,1.5),
     title = title,
-    aspect_ratio= 400)
+    aspect_ratio= 4)
 
     return p11
 end
@@ -291,22 +292,22 @@ end
 # Plot mean property tax with ACS and ASEC data 
 function proptx_plot(df_owners_mean_ACS, df_owners_mean_ASEC, title)
 
-    p11 = scatter(exp.(df_owners_mean_ACS.log_grossinc_mean)./1000, exp.(df_owners_mean_ACS.log_proptx_mean)./1000,
+    p11 = scatter(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_proptx_mean,
     label = "ACS",
     legend = :topleft,
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
     #ylim = (6,10),
     aspect_ratio=:equal)
-    scatter!(exp.(df_owners_mean_ASEC.log_grossinc_mean), df_owners_mean_ASEC.log_proptx_mean,
+    scatter!(df_owners_mean_ASEC.log_grossinc_mean, df_owners_mean_ASEC.log_proptx_mean,
     label = "ASEC",
     legend = :topleft,
     foreground_color_legend = nothing,
     yaxis="Log property tax",
-    xlim = (exp(9),exp(13)),
+    xlim = (9,13),
     #ylim = (6,10),
     aspect_ratio=:equal)
-    plot!(exp.(df_owners_mean_ACS.log_grossinc_mean), df_owners_mean_ACS.log_grossinc_mean .- (df_owners_mean_ACS.log_grossinc_mean[10] - df_owners_mean_ACS.log_proptx_mean[10]),
+    plot!(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_grossinc_mean .- (df_owners_mean_ACS.log_grossinc_mean[10] - df_owners_mean_ACS.log_proptx_mean[10]),
     line=:black,
     linestyle=:dash,
     label = "",
@@ -332,7 +333,7 @@ function proptx_plot_median(df_owners_median, title)
     label = "Log Property Tax",
     legend = :topleft,
     foreground_color_legend = nothing,
-    xaxis="Pre-government income",
+    xaxis="Log pre-government income",
     xlim = (9,13),
     ylim = (6,10),
     aspect_ratio=:equal)
@@ -349,40 +350,48 @@ end
 # Plot mean home value and gross rent
 function engel_plot(df_owners_mean, df_renters_mean, title)
 
-    p11 = scatter(exp.(df_owners_mean.log_grossinc_mean)./1000, exp.(df_owners_mean.log_valueh_mean)./1000,
-    label = "Log home value (thousands)",
+    p11 = scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean,
+    label = "Log Home Value",
     legend = :topleft,
     foreground_color_legend = nothing,
-    xlim = (0,500),
-    ylim = (0,1000),
-    asepct_ratio = 0.5)
-    plot!(exp.(df_owners_mean.log_grossinc_mean)./1000, exp.(df_owners_mean.log_valueh_mean_predict_beta1)./1000,
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (10.5,14.5),
+    aspect_ratio=:equal)
+    plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
-    aspect_ratio = 0.5)
+    aspect_ratio=:equal)
+    p11 = annotate!(12.0,13.7, Plots.text("Homothetic", 10, :dark, rotation = 45 ))
     
-    p22 = scatter(exp.(df_renters_mean.log_grossinc_mean)./1000, exp.(df_renters_mean.log_rentgrs_mean)./1000,
-    label = "Rent (thousands)",
+    
+    p22 = scatter(df_renters_mean.log_grossinc_mean, df_renters_mean.log_rentgrs_mean,
+    label = "Log Rent",
     legend = :topleft,
     foreground_color_legend = nothing,
-    xlim = (0,500),
-    ylim = (0, 5),
+    xaxis="Log pre-government income",
+    xlim = (9,13),
+    ylim = (5,9),
     seriescolor = :orange,
-    aspect_ratio =  100)
+    aspect_ratio=:equal)
     # plot!([9.3,12.1], [5.3,8.1], line=:black, linestyle=:dash, label = "", aspect_ratio=:equal)
-    plot!(exp.(df_renters_mean.log_grossinc_mean)./1000, exp.(df_renters_mean.log_rentgrs_mean_predict_beta1)./1000,
+    plot!(df_renters_mean.log_grossinc_mean, df_renters_mean.log_rentgrs_mean_predict_beta1,
     line=:black,
     linestyle=:dash,
     label = "",
-    aspect_ratio = 100)
+    aspect_ratio=:equal)
+    p22 = annotate!(12.0, 8.2, Plots.text("Homothetic", 10, :dark, rotation = 45 ))
     
-    l = @layout [a{0.01h}; grid(1,2); a{0.01h}]
-    p = fill(plot(),4,1)
+    # Comment areas saved for when we want one axis lable for both graphs
+    # l = @layout [a{0.01h}; grid(1,2); a{0.01h}]
+    # p = fill(plot(),4,1)
+    l = @layout [a{0.01h}; grid(1,2)]
+    p = fill(plot(),3,1)
     p[1] = plot(title=title, framestyle=nothing, showaxis=false, xticks=false, yticks=false, margin=0mm, bottom_margin = -20mm)
     p[2] = p11
     p[3] = p22
-    p[4] = plot(framestyle=nothing, showaxis=false, xticks=false, yticks=false, margin=0mm, top_margin = -25mm, xlabel = "Pre-governemnt income (thousands)", bottom_margin = 10mm)
+    # p[4] = plot(framestyle=nothing, showaxis=false, xticks=false, yticks=false, margin=0mm, top_margin = -25mm, xlabel = "Pre-governemnt income (thousands)", bottom_margin = 10mm)
 
     p1 = plot(p..., layout=l)
 
