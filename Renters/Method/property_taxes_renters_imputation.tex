@@ -1,0 +1,71 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,graphicx,amsmath,amsfonts,eurosym,geometry,ulem,graphicx,caption,color,setspace,sectsty,comment,footmisc,caption,natbib,pdflscape,subfigure,array,hyperref}
+\usepackage{setspace}
+\usepackage{bbm}
+\graphicspath{{/Users/jiaxitan/UMN/Research/GVC diversity and covid/Paper/Figs}}
+\normalem
+
+\onehalfspacing
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}{Proposition}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
+\newtheorem{hyp}{Hypothesis}
+\newtheorem{subhyp}{Hypothesis}[hyp]
+\renewcommand{\thesubhyp}{\thehyp\alph{subhyp}}
+
+\newcommand{\red}[1]{{\color{red} #1}}
+\newcommand{\blue}[1]{{\color{blue} #1}}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+
+\geometry{left=1.0in,right=1.0in,top=1.0in,bottom=1.0in}
+
+\begin{document}
+
+
+Match renter households in ASEC by state and county (where possible) to
+similar households in the ACS (same matching variables as we used for
+owners) and impute an estimate of rent paid to each ASEC\ renter household.
+
+Use the Zillow price rent ratios by state to estimate home values for each
+ASEC\ renter given their estimated rent paid
+
+At the state and county level (where possible) estimate the property tax
+rate paid given the ASEC household income level
+
+We estimate property tax rates using our imputed estimates for home values
+and property taxes for homeowners
+
+For each homeowner we have an individual property tax rate defined as
+property taxes divided by home value
+
+We fit a function to these property tax rates at the state (and county)
+level as%
+\[
+\tau _{i}(y)=\alpha _{0,i}+\alpha _{1,i}\log (y)+\alpha _{2,i}\log (y)^{2}
+\]%
+where $i$ denotes state and county. We run this regression at the
+inidividual household level
+
+Then when we have estimated the coefficients we impute property taxes for
+household $j$ in ASEC as
+
+\[
+prop\_tax_{j,i}=\left( \alpha _{0,i}+\alpha _{1,i}\log (y_{j})+\alpha
+_{2,i}\log (y_{j})^{2}\right) \hat{p}_{j}
+\]
+
+Then the last step was to make a scatterplot where we plot property taxes
+against log household income for both homeowners and renters in the same
+state, with the homeowner dots in blue and the renter dots in red
+
+\bigskip 
+
+Questions? Are Zillow ratios available at the county level?
+
+\end{document}
