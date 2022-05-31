@@ -191,13 +191,15 @@ function engel_renters_data(df, code)
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
     inc_vingtiles!(df_renters);
     gdf_renters = groupby(df_renters, [:grossinc_vingtile]);
-    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, nrow);
+    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :proptx99_recode => mean => :proptx_mean, :txrate => mean, nrow);
     sort!(df_renters_mean, :grossinc_vingtile);
     df_renters_mean[:, :log_grossinc_mean] = log.(df_renters_mean[:, :grossinc_mean]);
+    df_renters_mean[:, :log_proptx_mean]  = log.(df_renters_mean[:, :proptx_mean]);
     df_renters_mean[:, :log_rentgrs_mean] = log.(df_renters_mean[:, :rentgrs_mean]);
     # ols_renters = lm(@formula(log_rentgrs_mean ~ log_grossinc_mean), df_renters_mean)
 
     df_renters_mean[:, :log_rentgrs_mean_predict_beta1] =  -4 .+ df_renters_mean[:, :log_grossinc_mean];
+    df_renters_mean[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_renters_mean[:, :log_grossinc_mean];
 
     return df_renters_mean
 end
@@ -249,6 +251,20 @@ function engel_owners_data_state(df, code)
     df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx99_recode_mean]);
 
     return df_owners_mean
+end
+
+function engel_renters_data_state(df, code)
+    df_renters = filter(r -> (r[:ownershp] .!= code), df);
+    inc_vingtiles!(df_renters);
+    gdf_renters = groupby(df_renters, [:statename, :grossinc_vingtile]);
+    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :proptx99_recode => mean, :txrate => mean, nrow);
+    sort!(df_renters_mean, [:statename, :grossinc_vingtile]);
+
+    df_renters_mean[:, :log_grossinc_mean] = log.(df_renters_mean[:, :grossinc_mean]);
+    df_renters_mean[:, :log_rentgrs_mean]  = log.(df_renters_mean[:, :rentgrs_mean]);
+    df_renters_mean[:, :log_proptx_mean]  = log.(df_renters_mean[:, :proptx99_recode_mean]);
+
+    return df_renters_mean
 end
 
 # Plot mean property tax of each income bin 

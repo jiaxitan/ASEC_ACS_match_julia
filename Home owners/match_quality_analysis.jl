@@ -96,7 +96,7 @@ df_ASEC_hh_match_0506_final1 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_cou
 # Engel curves, percentiles, mean of nearest neighbors
 insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :valueh => df_ASEC_hh_match_0506_final.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final.ACS_rentgrs_mean);
-insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final.ACS_proptax_median);
+insertcols!(df_ASEC_hh_match_0506_final1, size(df_ASEC_hh_match_0506_final1, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final.ACS_proptax_mean);
 df_owners_mean1 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final1, 10);
 df_renters_mean1 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final1, 10);
 
