@@ -7,8 +7,8 @@
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/match_ASEC_ACS_0506_1011_1516.jl");
 
 ## I: set input data
-file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv"
-file_home_value = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv"
+file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
+file_home_value = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv";
 
 ## II: Import and prepare property taxes for renters
 df_rentgrs = CSV.read(file_rent_paid, DataFrame);
@@ -18,6 +18,7 @@ insertcols!(df_annual_rentgrs_to_valueh, 1, :statename => df_rentgrs.Column1);
 df_annual_rentgrs_to_valueh = DataFrames.stack(df_annual_rentgrs_to_valueh, Not(:statename));
 rename!(df_annual_rentgrs_to_valueh, :variable => :YEAR, :value => :rentgrs_valueh_ratio);
 df_annual_rentgrs_to_valueh.YEAR = convert.(Int64, parse.(Int64, df_annual_rentgrs_to_valueh.YEAR));
+df_annual_rentgrs_to_value_mean = combine(groupby(df_annual_rentgrs_to_valueh, [:YEAR]), :statename, :rentgrs_valueh_ratio => mean);
 
 df_ASEC_owners = df_ASEC_hh_match_0506_final[df_ASEC_hh_match_0506_final.ownershp .== 10, :];
 insertcols!(df_ASEC_owners, size(df_ASEC_owners, 2)+1, :txrate =>  df_ASEC_owners.ACS_proptax_mean ./ df_ASEC_owners.ACS_valueh_mean);
