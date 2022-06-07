@@ -342,6 +342,10 @@ function proptx_plot_compare!(df_owners_mean_ACS, df_owners_mean_ASEC, outfile)
     end
 end
 
+function txrate_plot_compare!(df_owners_mean, df_renters_mean)
+    
+end
+
 # Plot median property tax for each income bin
 function proptx_plot_median(df_owners_median, title)
 
