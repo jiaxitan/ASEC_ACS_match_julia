@@ -130,7 +130,7 @@ include(dir_functions * "ASEC_ACS_match_county.jl")
 include(dir_functions * "ASEC_ACS_match_state.jl")
 include(dir_functions * "ASEC_ACS_match.jl")
 matching_set = [:grossinc, :educ_recode, :unitsstr_recode];
-const k_NN = 9;
+k_NN = 1;
 
 # Prepare ASEC and ACS data
 

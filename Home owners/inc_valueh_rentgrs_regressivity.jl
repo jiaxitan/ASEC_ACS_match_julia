@@ -104,14 +104,15 @@ function engel_owners_data_median(df, code)
     df_owners = filter(r -> (r[:ownershp] .== code), df);
     inc_vingtiles!(df_owners);
     gdf_owners = groupby(df_owners, [:grossinc_vingtile]);
-    df_owners_median = combine(gdf_owners, :grossinc => median, :valueh => median, nrow);
+    df_owners_median = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean => :proptx_mean, :txrate => mean, nrow);
     sort!(df_owners_median, :grossinc_vingtile);
-    df_owners_median[:, :log_grossinc_median] = log.(df_owners_median[:, :grossinc_median]);
-    df_owners_median[:, :log_valueh_median]  = log.(df_owners_median[:, :valueh_median]);
-    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
+    df_owners_median[:, :log_grossinc_mean] = log.(df_owners_median[:, :grossinc_mean]);
+    df_owners_median[:, :log_proptx_mean]  = log.(df_owners_median[:, :proptx_mean]);
+    df_owners_median[:, :log_valueh_mean]  = log.(df_owners_median[:, :valueh_mean]);
 
-    df_owners_median[:, :log_valueh_median_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_median];
-    
+    df_owners_median[:, :log_valueh_mean_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_mean];
+    df_owners_median[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_owners_median[:, :log_grossinc_mean];
+
     return df_owners_median
 end
 
@@ -140,14 +141,14 @@ function engel_owners_data_percentiles_median(df, code)
     df_owners = filter(r -> (r[:ownershp] .== code), df);
     inc_percentiles!(df_owners);
     gdf_owners = groupby(df_owners, [:grossinc_percentile]);
-    df_owners_median = combine(gdf_owners, :grossinc => median, :valueh => median, nrow);
-    # sort!(df_owners_median, :grossinc_percentile);
-    df_owners_median[:, :log_grossinc_median] = log.(df_owners_median[:, :grossinc_median]);
-    df_owners_median[:, :log_valueh_median]  = log.(df_owners_median[:, :valueh_median]);
-    # ols_owners = lm(@formula(log_valueh_median ~ log_grossinc_median), df_owners_median)
+    df_owners_median = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean => :proptx_mean, :txrate => mean, nrow);
+    df_owners_median[:, :log_grossinc_mean] = log.(df_owners_median[:, :grossinc_mean]);
+    df_owners_median[:, :log_proptx_mean]  = log.(df_owners_median[:, :proptx_mean]);
+    df_owners_median[:, :log_valueh_mean]  = log.(df_owners_median[:, :valueh_mean]);
 
-    df_owners_median[:, :log_valueh_median_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_median];
-    
+    df_owners_median[:, :log_valueh_mean_predict_beta1] = 1.5 .+ df_owners_median[:, :log_grossinc_mean];
+    df_owners_median[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_owners_median[:, :log_grossinc_mean];
+
     return df_owners_median
 end
 
@@ -174,13 +175,15 @@ function engel_renters_data_median(df, code)
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
     inc_vingtiles!(df_renters);
     gdf_renters = groupby(df_renters, [:grossinc_vingtile]);
-    df_renters_median = combine(gdf_renters, :grossinc => median, :rentgrs => median, nrow);
+    df_renters_median = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :txrate => mean, nrow);
     sort!(df_renters_median, :grossinc_vingtile);
-    df_renters_median[:, :log_grossinc_median] = log.(df_renters_median[:, :grossinc_median]);
-    df_renters_median[:, :log_rentgrs_median] = log.(df_renters_median[:, :rentgrs_median]);
-    # ols_renters = lm(@formula(log_rentgrs_median ~ log_grossinc_median), df_renters_median)
+    df_renters_median[:, :log_grossinc_mean] = log.(df_renters_median[:, :grossinc_mean]);
+    #df_renters_median[:, :log_proptx_mean]  = log.(df_renters_median[:, :proptx_mean]);
+    df_renters_median[:, :log_rentgrs_mean] = log.(df_renters_median[:, :rentgrs_mean]);
+    # ols_renters = lm(@formula(log_rentgrs_mean ~ log_grossinc_mean), df_renters_mean)
 
-    df_renters_median[:, :log_rentgrs_median_predict_beta1] =  -4 .+ df_renters_median[:, :log_grossinc_median];
+    df_renters_median[:, :log_rentgrs_mean_predict_beta1] =  -4 .+ df_renters_median[:, :log_grossinc_mean];
+    #df_renters_median[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_renters_median[:, :log_grossinc_mean];
 
     return df_renters_median
 end
@@ -275,6 +278,8 @@ function proptx_plot(df_owners_mean, title)
     legend = :topleft,
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
     xlim = (9,13),
     ylim = (6,10),
     aspect_ratio=:equal)
@@ -288,6 +293,34 @@ function proptx_plot(df_owners_mean, title)
     return p11
 end
 
+function proptx_plot_state(df_owners_mean, s1, s2, title)
+
+    p11 = scatter(df_owners_mean[df_owners_mean.statename .== s1, :log_grossinc_mean], df_owners_mean[df_owners_mean.statename .== s1, :log_proptx_mean],
+        label = s1,
+        legend = :topleft,
+        foreground_color_legend = nothing,
+        xaxis="Log pre-government income",
+        xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
+    xlim = (9,13))
+    scatter!(df_owners_mean[df_owners_mean.statename .== s2, :log_grossinc_mean], df_owners_mean[df_owners_mean.statename .== s2, :log_proptx_mean],
+        label = s2,
+        legend = :topleft,
+        foreground_color_legend = nothing,
+        yaxis="Log property tax",
+        xlim = (9,13))
+    plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_grossinc_mean .- 3.0,
+        line=:black,
+        linestyle=:dash,
+        label = "",
+        aspect_ratio=:equal)
+    annotate!(12.0,9.5, Plots.text("Homothetic", 10, :dark, rotation = 45), title = title)
+
+    return p11
+end
+
+
+
 # Plot mean property tax rate of each income bin
 function txrate_plot(df_owners_mean, title)
 
@@ -296,7 +329,7 @@ function txrate_plot(df_owners_mean, title)
     legend = :topright,
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
-    xformatter = xi -> string(round(Int, exp(xi)/1000)) * "K",
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
     xlim = (9,13),
     ylim = (0.5,1.5),
     title = title,
@@ -304,6 +337,23 @@ function txrate_plot(df_owners_mean, title)
 
     return p11
 end
+
+function txrate_valueh_plot(df_owners_mean, title)
+
+    p11 = scatter(df_owners_mean.log_valueh_mean, df_owners_mean.txrate_mean.*100,
+    label = "Property tax rate (%)",
+    legend = :topright,
+    foreground_color_legend = nothing,
+    xaxis="Log home value",
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    xlim = (11.5,13.5),
+    ylim = (0.5,1.5),
+    title = title,
+    aspect_ratio= 2)
+
+    return p11
+end
+
 
 # Plot mean property tax with ACS and ASEC data 
 function proptx_plot(df_owners_mean_ACS, df_owners_mean_ASEC, title)
@@ -313,6 +363,8 @@ function proptx_plot(df_owners_mean_ACS, df_owners_mean_ASEC, title)
     legend = :topleft,
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
     #ylim = (6,10),
     aspect_ratio=:equal)
     scatter!(df_owners_mean_ASEC.log_grossinc_mean, df_owners_mean_ASEC.log_proptx_mean,
@@ -376,6 +428,8 @@ function engel_plot(df_owners_mean, df_renters_mean, title)
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
     xlim = (9,13),
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
     ylim = (10.5,14.5),
     aspect_ratio=:equal)
     plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean_predict_beta1,
@@ -393,6 +447,8 @@ function engel_plot(df_owners_mean, df_renters_mean, title)
     xaxis="Log pre-government income",
     xlim = (9,13),
     ylim = (5,9),
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
     seriescolor = :orange,
     aspect_ratio=:equal)
     # plot!([9.3,12.1], [5.3,8.1], line=:black, linestyle=:dash, label = "", aspect_ratio=:equal)

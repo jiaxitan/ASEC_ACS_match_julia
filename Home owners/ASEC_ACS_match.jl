@@ -1,6 +1,5 @@
 
 function ASEC_ACS_match(year, df_ASEC_county, df_ACS_county, df_ASEC_state, df_ACS_state, matching_set)
-
     df_ASEC_hh_county = df_ASEC_county[in(year).(df_ASEC_county.YEAR), :];
     df_ASEC_hh_state = df_ASEC_state[in(year).(df_ASEC_state.YEAR), :];
 

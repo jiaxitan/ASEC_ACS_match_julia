@@ -9,25 +9,54 @@ insertcols!(df_ACS_hh, size(df_ACS_hh, 2)+1, :txrate => df_ACS_hh.proptx99_recod
 df_ACS_hh[df_ACS_hh.valueh .== 0, :txrate] .= 0;
 
 # Engel curves, percentiles, mean
-df_owners_mean = engel_owners_data_percentiles(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-df_renters_mean = engel_renters_data_percentiles(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean = engel_owners_data_percentiles(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
+df_renters_mean = engel_renters_data_percentiles(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
 
 p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2010/2011)")
 
 # Engel curves, vingtiles, mean
-df_owners_mean = engel_owners_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
-df_renters_mean = engel_renters_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean = engel_owners_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
+df_renters_mean = engel_renters_data(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
 
-p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2010/2011)")
+p1_mean = engel_plot(df_owners_mean, df_renters_mean, "Housing Engel Curves (ACS, 2005/2006)")
 savefig(fig2_dir_out * "levels home value ACS.pdf");
 
 # Plot engel curves for property tax
-p1_proptx_mean = proptx_plot(df_owners_mean, "Property Tax Engel Curves (ACS, 2010/2011)")
+p1_proptx_mean = proptx_plot(df_owners_mean, "Property Tax (ACS, 2005/2006)");
 savefig(fig2_dir_out * "levels prop tax ACS.pdf");
 
 # Plot engel curves for property tax rate
-p1_txrate_mean = txrate_plot(df_owners_mean, "Property Tax Rate Engel Curves (ACS, 2010/2011)")
+p1_txrate_mean = txrate_plot(df_owners_mean, "Property Tax Rate Engel Curves (ACS, 2005/2006)");
+savefig(fig2_dir_out * "levels tax rate vs income ACS.pdf");
+txrate_valueh_plot(df_owners_mean, "Property Tax Rate vs Home Value (ACS, 2005/2006)");
+savefig(fig2_dir_out * "levels tax rate vs home value ACS.pdf");
 
+scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean,
+    label = "Log home value",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    seriescolor = :blue,
+    xlim = (9,13),
+    xformatter = xi -> string(round(Int, exp(xi)/1000)) * "K",
+    yformatter = yi -> string(round(Int, exp(yi)/1000)) * "K",
+    ylim = (10.5,14.5), aspect_ratio = :equal)
+plot!(df_owners_mean.log_grossinc_mean, df_owners_mean.log_valueh_mean_predict_beta1,
+    line=:black,
+    linestyle=:dash,
+    label = "")
+annotate!(12.0,13.7, Plots.text("Homothetic", 10, :dark, rotation = 45 ), title = "Property Tax and Tax Rate Engels (ACS, 2005/2006)")
+scatter(twinx(), df_owners_mean.log_grossinc_mean, df_owners_mean.txrate_mean.*100,
+    label = "Property tax rate (%)",
+    legend = (0.2,0.85),
+    seriescolor = :red,
+    foreground_color_legend = nothing,
+    xticks = :none,
+    ylim = (0.5,1.5),
+    xlim = (9,13), 
+    #left_margin = -2Plots.mm,
+    aspect_ratio = 4)
+savefig(fig2_dir_out * "tax rate and home value Engel ACS.pdf");
 
 df_owners_mean_proptx = engel_proptax_data(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
 p1_proptx_mean = proptx_plot_median(df_owners_median_proptx, "Property Tax Engel Curves (ACS, 2010/2011)")
@@ -120,31 +149,70 @@ p2_proptx = proptx_plot(df_owners_median_proptx1, "Property Tax Engel Curves (AS
 ## 2nd matching - no recodes
 matching_set = [:grossinc, :educ_recode, :unitsstr_recode];
 
-df_ASEC_hh_match_0506_final2 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+k_NN = 9;
+df_ASEC_hh_match_0506_final2 = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+
 
 # Engel curves, percentiles, mean of nearest neighbors 
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :valueh => df_ASEC_hh_match_0506_final2.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final2.ACS_rentgrs_mean);
 insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final2.ACS_proptax_mean);
-df_owners_mean2 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
-df_renters_mean2 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final2, 10);
+insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :txrate =>  df_ASEC_hh_match_0506_final2.proptx99_recode ./ df_ASEC_hh_match_0506_final2.valueh);
+df_ASEC_hh_match_0506_final2[df_ASEC_hh_match_0506_final2.valueh .== 0, :txrate] .= 0;
+
+df_owners_mean2 = engel_owners_data(df_ASEC_hh_match_0506_final2, 10);
+df_renters_mean2 = engel_renters_data(df_ASEC_hh_match_0506_final2, 10);
 
 p3_mean = engel_plot(df_owners_mean2, df_renters_mean2, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
 
 # Engel curves, percentiles, median of nearest neighbors
 df_ASEC_hh_match_0506_final2.valueh = df_ASEC_hh_match_0506_final2.ACS_valueh_median;
 df_ASEC_hh_match_0506_final2.rentgrs = df_ASEC_hh_match_0506_final2.ACS_rentgrs_median;
-df_owners_median2 = engel_owners_data_percentiles_median(df_ASEC_hh_match_0506_final2, 10);
-df_renters_median2 = engel_renters_data_percentiles_median(df_ASEC_hh_match_0506_final2, 10);
+df_ASEC_hh_match_0506_final2.proptx99_recode = df_ASEC_hh_match_0506_final2.ACS_proptax_median;
+df_ASEC_hh_match_0506_final2.txrate = df_ASEC_hh_match_0506_final2.proptx99_recode ./ df_ASEC_hh_match_0506_final2.valueh;
+df_ASEC_hh_match_0506_final2[df_ASEC_hh_match_0506_final2.valueh .== 0, :txrate] .= 0;
 
-p3_median = engel_plot_median(df_owners_median2, df_renters_median2, "Housing Engel Curves (ASEC benchmark, 2010/2011)");
+df_owners_median2 = engel_owners_data_median(df_ASEC_hh_match_0506_final2, 10);
+#df_renters_median2 = engel_renters_data_median(df_ASEC_hh_match_0506_final2, 10);
 
-# Engel curves for property tax, mean of nearest neigbors
-df_owners_mean_proptx2 = engel_proptax_data(df_ASEC_hh_match_0506_final2, 10);
+#df_owners_median2_k1 = engel_owners_data_median(df_ASEC_hh_match_0506_final2, 10);
+df_renters_median2_k1 = engel_renters_data_median(df_ASEC_hh_match_0506_final2, 10);
 
-# Plot ACS and ASEC property tax together
-proptx_plot(df_owners_mean_proptx, df_owners_mean_proptx2, "Propty tax Engel, National")
-savefig(fig2_dir_out * "Property_Tax_k9.pdf");
+p3_median = engel_plot(df_owners_median2, df_renters_median2, "Housing Engel Curves (ASEC benchmark, 2005/2006)");
+savefig(fig2_dir_out * "levels home value ASEC k=9 median.pdf");
+
+# Engel curves for property tax, median of nearest neigbors
+proptx_plot(df_owners_median2, "Property Tax Engel Curves (ASEC, 2005/2006)")
+savefig(fig2_dir_out * "levels prop tax ASEC k=9 median.pdf");
+
+scatter(df_owners_mean.log_grossinc_mean, df_owners_mean.log_proptx_mean,
+    label = "ACS")
+scatter!(df_owners_mean2.log_grossinc_mean, df_owners_mean2.log_proptx_mean,
+    label = "k=9 mean",
+    legend = :topleft,
+    foreground_color_legend = nothing,
+    xaxis="Log pre-government income",
+    xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
+    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
+    xlim = (9,13),
+    ylim = (6,10),
+    aspect_ratio=:equal)
+scatter!(df_owners_median2_k1.log_grossinc_mean, df_owners_median2_k1.log_proptx_mean,
+    label = "k=1")
+plot!(df_owners_median2.log_grossinc_mean, df_owners_median2.log_proptx_mean_predict_beta1,
+    line=:black,
+    linestyle=:dash,
+    label = "",
+    aspect_ratio=:equal)
+annotate!(12.0,9, Plots.text("Homothetic", 10, :dark, rotation = 45 ), title = "Property Tax Engel Curves")
+savefig(fig2_dir_out * "levels prop tax mean.pdf");
+
+    
+
+p1_txrate_mean = txrate_plot(df_owners_median2, "Property Tax Rate Engel Curves (ASEC, 2005/2006)")
+savefig(fig2_dir_out * "levels tax rate vs income ASEC k=9 median.pdf");
+txrate_valueh_plot(df_owners_median2, "Property Tax Rate vs Home Value(ASEC, 2005/2006)")
+savefig(fig2_dir_out * "levels tax rate vs home value ASEC k=9 median.pdf");
 
 # Compare mean and median approach on plotting using matched ASEC home value
 #=
@@ -180,6 +248,7 @@ df_ASEC_hh_match_0506_final3 = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_cou
 insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :valueh => df_ASEC_hh_match_0506_final3.ACS_valueh_mean);
 insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :rentgrs => df_ASEC_hh_match_0506_final3.ACS_rentgrs_mean);
 insertcols!(df_ASEC_hh_match_0506_final3, size(df_ASEC_hh_match_0506_final3, 2)+1, :proptx99_recode => df_ASEC_hh_match_0506_final3.ACS_proptax_median);
+
 df_owners_mean3 = engel_owners_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 df_renters_mean3 = engel_renters_data_percentiles(df_ASEC_hh_match_0506_final3, 10);
 
@@ -203,36 +272,48 @@ plot(p1_mean, p2_mean, p3_mean, p4_mean, layout = (2,2), size = (1200,800))
 savefig(fig2_dir_out * "Weighted_Mean_Engel_curve_ACS_new_benchmark_median_1011.pdf");
 
 ## Compare property tax of ACS and ASEC by state
-df_owners_mean_ACS = engel_owners_data_state(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
+df_owners_mean_ACS = engel_owners_data_state(df_ACS_hh[in([2005, 2006]).(df_ACS_hh.YEAR), :], 1);
 df_owners_mean_ASEC = engel_owners_data_state(df_ASEC_hh_match_0506_final2, 10);
 
 proptx_plot_compare!(df_owners_mean_ACS, df_owners_mean_ASEC, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/state engel k=9/");
 
 ## LA vs NJ, property tax Engel
-s1 = "New Jersey"
-s2 = "Louisiana"
+s1 = "California"
+s2 = "Texas"
 
-p_ACS = scatter(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_proptx_mean] .* 100,
+proptx_plot_state(df_owners_mean_ACS, s1, s2, "CA vs. TX (ACS, 2005/2006)")
+savefig(fig2_dir_out * "ca vs tx ACS.pdf");
+
+s1 = "New York"
+s2 = "Florida"
+proptx_plot_state(df_owners_mean_ACS, s1, s2, "NY vs. FL (ACS, 2005/2006)")
+savefig(fig2_dir_out * "ny vs fl ACS.pdf");
+
+
+p_ACS = scatter(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s1, :log_proptx_mean],
     label = s1,
     legend = :topleft,
     foreground_color_legend = nothing,
     xaxis="Log pre-government income",
-    xlim = (9,13),
-    ylim = (0, 5))
-scatter!(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_proptx_mean] .* 100,
+    xformatter = xi -> string(round(Int, exp(xi)/1000)) * "K",
+    yformatter = yi -> string(round(Int, exp(yi)/1000)) * "K",
+    xlim = (9,13))
+scatter!(df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_grossinc_mean], df_owners_mean_ACS[df_owners_mean_ACS.statename .== s2, :log_proptx_mean],
     label = s2,
     legend = :topleft,
     foreground_color_legend = nothing,
     yaxis="Property tax rate (%)",
     xlim = (9,13),
-    ylim = (0, 5),
-    title = "NJ vs. LA ACS")
+    #ylim = (0, 5),
+    title = "CA vs. TX ACS")
 plot!(df_owners_mean_ACS.log_grossinc_mean, df_owners_mean_ACS.log_grossinc_mean .- 3.0,
     line=:black,
     linestyle=:dash,
     label = "",
     aspect_ratio=:equal,
-    title = "NJ vs. LA ACS") 
+    title = "CA vs. TX ACS")
+annotate!(12.0,9.5, Plots.text("Homothetic", 10, :dark, rotation = 45))
+
 
 p_ASEC = scatter(df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s1, :log_grossinc_mean], df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s1, :log_proptx_mean] .* 100,
     label = s1,
@@ -248,13 +329,13 @@ scatter!(df_owners_mean_ASEC[df_owners_mean_ASEC.statename .== s2, :log_grossinc
     yaxis="Property tax rate (%)",
     xlim = (9,13),
     ylim = (0, 5),
-    title = "NJ vs. LA ASEC")
+    title = "CA vs. TX ASEC")
 plot!(df_owners_mean_ASEC.log_grossinc_mean, df_owners_mean_ASEC.log_grossinc_mean .- 3.0,
     line=:black,
     linestyle=:dash,
     label = "",
     aspect_ratio=:equal,
-    title = "NJ vs. LA ASEC")
+    title = "CA vs. TX ASEC")
 
 
 plot(p_ACS, p_ASEC, layout = (1,2))
@@ -263,9 +344,6 @@ savefig(fig2_dir_out * "nj la.pdf");
 ## LA vs NJ, property tax rate
 
 # Compute property tax rate for each household
-insertcols!(df_ASEC_hh_match_0506_final2, size(df_ASEC_hh_match_0506_final2, 2)+1, :txrate =>  df_ASEC_hh_match_0506_final2.proptx99_recode ./ df_ASEC_hh_match_0506_final2.valueh);
-df_ASEC_hh_match_0506_final2[df_ASEC_hh_match_0506_final2.valueh .== 0, :txrate] .= 0;
-
 df_owners_mean_ACS = engel_owners_data_state(df_ACS_hh[in([2010, 2011]).(df_ACS_hh.YEAR), :], 1);
 df_owners_mean_ASEC = engel_owners_data_state(df_ASEC_hh_match_0506_final2, 10);
 
