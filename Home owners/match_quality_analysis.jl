@@ -207,8 +207,6 @@ plot!(df_owners_median2.log_grossinc_mean, df_owners_median2.log_proptx_mean_pre
 annotate!(12.0,9, Plots.text("Homothetic", 10, :dark, rotation = 45 ), title = "Property Tax Engel Curves")
 savefig(fig2_dir_out * "levels prop tax mean.pdf");
 
-    
-
 p1_txrate_mean = txrate_plot(df_owners_median2, "Property Tax Rate Engel Curves (ASEC, 2005/2006)")
 savefig(fig2_dir_out * "levels tax rate vs income ASEC k=9 median.pdf");
 txrate_valueh_plot(df_owners_median2, "Property Tax Rate vs Home Value(ASEC, 2005/2006)")
