@@ -135,6 +135,42 @@ function engel_owners_data(df, code)
     return df_owners_mean
 end
 
+function engel_owners_homeCha(df, code)
+
+    df_owners = filter(r -> (r[:ownershp] .== code), df);
+    inc_vingtiles!(df_owners);
+    gdf_owners = groupby(df_owners, [:grossinc_vingtile]);
+    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean => :proptx_mean, :txrate => mean, :rooms => mean, :unitsstr_recode => (s -> sum(s .== 5)) => :single_fam, :movedin => mean, :age => mean, nrow);
+    sort!(df_owners_mean, :grossinc_vingtile);
+    df_owners_mean[:, :log_grossinc_mean] = log.(df_owners_mean[:, :grossinc_mean]);
+    df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx_mean]);
+    df_owners_mean[:, :log_valueh_mean]  = log.(df_owners_mean[:, :valueh_mean]);
+    # ols_owners = lm(@formula(log_valueh_mean ~ log_grossinc_mean), df_owners_mean)
+
+    df_owners_mean[:, :log_valueh_mean_predict_beta1] = 1.5 .+ df_owners_mean[:, :log_grossinc_mean];
+    df_owners_mean[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_owners_mean[:, :log_grossinc_mean];
+
+    return df_owners_mean
+end
+
+function engel_renters_homeCha(df, code)
+
+    df_renters = filter(r -> (r[:ownershp] .!= code), df);
+    inc_vingtiles!(df_renters);
+    gdf_renters = groupby(df_renters, [:grossinc_vingtile]);
+    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :proptx99_recode => mean => :proptx_mean, :rooms => mean, :unitsstr_recode => (s -> sum(s .== 5)) => :single_fam, :movedin => mean, :age => mean, :txrate => mean, nrow);
+    sort!(df_renters_mean, :grossinc_vingtile);
+    df_renters_mean[:, :log_grossinc_mean] = log.(df_renters_mean[:, :grossinc_mean]);
+    df_renters_mean[:, :log_proptx_mean]  = log.(df_renters_mean[:, :proptx_mean]);
+    df_renters_mean[:, :log_rentgrs_mean] = log.(df_renters_mean[:, :rentgrs_mean]);
+    # ols_renters = lm(@formula(log_rentgrs_mean ~ log_grossinc_mean), df_renters_mean)
+
+    df_renters_mean[:, :log_rentgrs_mean_predict_beta1] =  -4 .+ df_renters_mean[:, :log_grossinc_mean];
+    df_renters_mean[:, :log_proptx_mean_predict_beta1] = -3.3 .+ df_renters_mean[:, :log_grossinc_mean];
+
+    return df_renters_mean
+end
+
 # Median home value of each income bin, percentiles
 function engel_owners_data_percentiles_median(df, code)
 
@@ -254,6 +290,34 @@ function engel_owners_data_state(df, code)
     df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx99_recode_mean]);
 
     return df_owners_mean
+end
+
+function engel_owners_homeCha_state(df, code)
+    df_owners = filter(r -> (r[:ownershp] .== code), df);
+    inc_vingtiles!(df_owners);
+    gdf_owners = groupby(df_owners, [:statename, :grossinc_vingtile]);
+    df_owners_mean = combine(gdf_owners, :grossinc => mean, :valueh => mean, :proptx99_recode => mean, :txrate => mean, :rooms => mean, :unitsstr_recode => (s -> sum(s .== 5)) => :single_fam, :movedin => mean, :age => mean, nrow);
+    sort!(df_owners_mean, [:statename, :grossinc_vingtile]);
+
+    df_owners_mean[:, :log_grossinc_mean] = log.(df_owners_mean[:, :grossinc_mean]);
+    df_owners_mean[:, :log_valueh_mean]  = log.(df_owners_mean[:, :valueh_mean]);
+    df_owners_mean[:, :log_proptx_mean]  = log.(df_owners_mean[:, :proptx99_recode_mean]);
+
+    return df_owners_mean
+end
+
+function engel_renters_homeCha_state(df, code)
+    df_renters = filter(r -> (r[:ownershp] .!= code), df);
+    inc_vingtiles!(df_renters);
+    gdf_renters = groupby(df_renters, [:statename, :grossinc_vingtile]);
+    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :proptx99_recode => mean, :txrate => mean, :rooms => mean, :unitsstr_recode => (s -> sum(s .== 5)) => :single_fam, :movedin => mean, :age => mean, nrow);
+    sort!(df_renters_mean, [:statename, :grossinc_vingtile]);
+
+    df_renters_mean[:, :log_grossinc_mean] = log.(df_renters_mean[:, :grossinc_mean]);
+    df_renters_mean[:, :log_rentgrs_mean]  = log.(df_renters_mean[:, :rentgrs_mean]);
+    df_renters_mean[:, :log_proptx_mean]  = log.(df_renters_mean[:, :proptx99_recode_mean]);
+
+    return df_renters_mean
 end
 
 function engel_renters_data_state(df, code)

@@ -154,7 +154,8 @@ function prepare_data()
     # Collapse at household level
     ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
     df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, 
-    :QVALUEH=>first=>:qvalueh, :STATEFIPS=>first=>:statefips,:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh);
+    :QVALUEH=>first=>:qvalueh, :STATEFIPS=>first=>:statefips,:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh,
+    :ROOMS=>first=>:rooms, :MOVEDIN=>first=>:movedin);
     insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
     filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
     df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
