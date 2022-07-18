@@ -135,6 +135,19 @@ function engel_owners_data(df, code)
     return df_owners_mean
 end
 
+function engel_data(df)
+
+    inc_vingtiles!(df);
+    gdf= groupby(df, [:grossinc_vingtile]);
+    df_mean = combine(gdf, :grossinc => mean, :proptx99_recode => mean => :proptx_mean, :txrate => mean, nrow);
+    sort!(df_mean, :grossinc_vingtile);
+    df_mean[:, :log_grossinc_mean] = log.(df_mean[:, :grossinc_mean]);
+    df_mean[:, :log_proptx_mean]  = log.(df_mean[:, :proptx_mean]);
+    # ols_owners = lm(@formula(log_valueh_mean ~ log_grossinc_mean), df_owners_mean)
+
+    return df_mean
+end
+
 function engel_owners_homeCha(df, code)
 
     df_owners = filter(r -> (r[:ownershp] .== code), df);
@@ -292,6 +305,18 @@ function engel_owners_data_state(df, code)
     return df_owners_mean
 end
 
+function engel_data_state(df)
+    inc_vingtiles!(df);
+    gdf = groupby(df, [:statename, :grossinc_vingtile]);
+    df_mean = combine(gdf, :grossinc => mean,  :proptx99_recode => mean, :txrate => mean, nrow);
+    sort!(df_mean, [:statename, :grossinc_vingtile]);
+
+    df_mean[:, :log_grossinc_mean] = log.(df_mean[:, :grossinc_mean]);
+    df_mean[:, :log_proptx_mean]  = log.(df_mean[:, :proptx99_recode_mean]);
+
+    return df_mean
+end
+
 function engel_owners_homeCha_state(df, code)
     df_owners = filter(r -> (r[:ownershp] .== code), df);
     inc_vingtiles!(df_owners);
@@ -365,8 +390,8 @@ function proptx_plot_state(df_owners_mean, s1, s2, title)
         foreground_color_legend = nothing,
         xaxis="Log pre-government income",
         xformatter = xi -> string(floor(Int, exp(xi)/1000)) * "." * string(round(Int, (exp(xi) - floor(Int, exp(xi)/1000)*1000)/10)) * "K",
-    yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
-    xlim = (9,13))
+        yformatter = yi -> string(floor(Int, exp(yi)/1000)) * "." * string(round(Int, (exp(yi) - floor(Int, exp(yi)/1000)*1000)/10)) * "K",
+        xlim = (9,13))
     scatter!(df_owners_mean[df_owners_mean.statename .== s2, :log_grossinc_mean], df_owners_mean[df_owners_mean.statename .== s2, :log_proptx_mean],
         label = s2,
         legend = :topleft,
