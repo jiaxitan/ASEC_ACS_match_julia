@@ -46,11 +46,13 @@ function fit_proptxrate_income_ACS!()
 
     for state in unique(df_ACS_renters.statename)
         df_renters_tmp_state = df_ACS_renters[df_ACS_renters.statename .== state, :];
-        df_owners_tmp_state = df_ACS_owners[df_ACS_owners.statename .== state, :]
+        df_owners_tmp_state = df_ACS_owners[df_ACS_owners.statename .== state, :];
 
         deleteat!(df_ACS_renters, (df_ACS_renters.county .== 0) .&& (df_ACS_renters.statename .== state));
 
         for county in unique(df_renters_tmp_state.county[df_renters_tmp_state.county .!= 0])
+            county = unique(df_renters_tmp_state.county[df_renters_tmp_state.county .!= 0])[1]
+
             df_renters_tmp = df_renters_tmp_state[df_renters_tmp_state.county .== county, :];
             df_owners_tmp = df_owners_tmp_state[df_owners_tmp_state.county .== county, :];
 
@@ -60,7 +62,7 @@ function fit_proptxrate_income_ACS!()
                 continue
             end
 
-            regression = lm(fm, df_owners_tmp);
+            regression = lm(fm, df_owners_tmp[df_owners_tmp.txrate .!=0,:])
             df_ACS_renters[df_ACS_renters.county .== county, :txrate] .= predict(regression, df_renters_tmp);
 
             deleteat!(df_owners_tmp_state, df_owners_tmp_state.county .== county);
@@ -71,7 +73,7 @@ function fit_proptxrate_income_ACS!()
             continue
         end
 
-        regression = lm(fm, df_owners_tmp_state);
+        regression = lm(fm, df_owners_tmp_state[df_owners_tmp_state.txrate .!=0,:]);
         df_renters_tmp_state.txrate .= predict(regression, df_renters_tmp_state);
 
         append!(df_ACS_renters, df_renters_tmp_state);

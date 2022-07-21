@@ -349,11 +349,12 @@ function engel_renters_data_state(df, code)
     df_renters = filter(r -> (r[:ownershp] .!= code), df);
     inc_vingtiles!(df_renters);
     gdf_renters = groupby(df_renters, [:statename, :grossinc_vingtile]);
-    df_renters_mean = combine(gdf_renters, :grossinc => mean, :rentgrs => mean, :proptx99_recode => mean, :txrate => mean, nrow);
+    df_renters_mean = combine(gdf_renters, :grossinc => mean, :valueh => mean , :rentgrs => mean, :proptx99_recode => mean, :txrate => mean, nrow);
     sort!(df_renters_mean, [:statename, :grossinc_vingtile]);
 
     df_renters_mean[:, :log_grossinc_mean] = log.(df_renters_mean[:, :grossinc_mean]);
     df_renters_mean[:, :log_rentgrs_mean]  = log.(df_renters_mean[:, :rentgrs_mean]);
+    df_renters_mean[:, :log_valueh_mean] = log.(df_renters_mean[:, :valueh_mean]);
     df_renters_mean[:, :log_proptx_mean]  = log.(df_renters_mean[:, :proptx99_recode_mean]);
 
     return df_renters_mean
