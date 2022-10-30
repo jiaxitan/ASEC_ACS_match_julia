@@ -18,7 +18,7 @@ Renters:
 5. Use the Zillow price-rent ratios by state to estimate home values for each ASEC renter given the imputed rent paid (gross rent). 
 6. For each ASEC home owner, compute the property tax rate as the ratio of property tax paid over home value.
 7. At the state and county level (where possible) estimate the property tax rate paid given the ASEC household income level by fitting the function:
-<img src="https://latex.codecogs.com/gif.latex?\tau_i(y) = \alpha_{0,i} + \alpha_{1,i}\log(y) + \alpha_{2,i}\log(y)^2" /> 
+![equation](https://latex.codecogs.com/svg.image?\tau_i(y)&space;=&space;\alpha_{0,i}&space;&plus;&space;\alpha_{1,i}\log(y)&space;&plus;&space;\alpha_{2,i}\log(y)^2&space;)
 where i denotes state and country. We run this regression at individual household level.
 8. The we use the estimated coefficients and imputed home value for renters to imput property taxes for renters.
 
