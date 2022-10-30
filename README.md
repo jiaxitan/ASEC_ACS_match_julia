@@ -13,7 +13,7 @@ Home Owners:
 5. We compare the regressivity of propterty tax in ACS and in imputed ASEC data. The conclusion is that we should plot the mean of income and property tax in each income group. (Refer to an email on June 12, 2022)
 
 Renters:
-1, 2, and 3 are the same as that in home owners'.
+1. 2. and 3. are the same as that in home owners'.
 4. Given the 9 nearest neighbors, we computed the mean gross rent and mean rent. Assign these values to the ASEC household.
 5. Use the Zillow price-rent ratios by state to estimate home values for each ASEC renter given the imputed rent paid (gross rent). 
 6. For each ASEC home owner, compute the property tax rate as the ratio of property tax paid over home value.
