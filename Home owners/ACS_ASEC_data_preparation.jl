@@ -104,7 +104,6 @@ function prepare_data()
 
 
     ## Import and prepare ACS file
-
     
     df_ACS = CSV.read(file_ACS, DataFrame);
 
@@ -161,6 +160,22 @@ function prepare_data()
     df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
     df_ACS_hh[:, :proptx_log] = log.(df_ACS_hh[:, :proptx99_recode]);
 
+    #Impute home value for renters from Zillow data
+    file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
+    file_home_value = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv";
+    
+    df_rentgrs = CSV.read(file_rent_paid, DataFrame);
+    df_valueh = CSV.read(file_home_value, DataFrame);
+    df_annual_rentgrs_to_valueh = 12 .* df_rentgrs[:,2:end] ./ df_valueh[:,2:end];
+    insertcols!(df_annual_rentgrs_to_valueh, 1, :statename => df_rentgrs.Column1);
+    df_annual_rentgrs_to_valueh = DataFrames.stack(df_annual_rentgrs_to_valueh, Not(:statename));
+    rename!(df_annual_rentgrs_to_valueh, :variable => :YEAR, :value => :rentgrs_valueh_ratio);
+    df_annual_rentgrs_to_valueh.YEAR = convert.(Int64, parse.(Int64, df_annual_rentgrs_to_valueh.YEAR));
+
+    df_ACS_hh = leftjoin(df_ACS_hh, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR]);
+    df_ACS_hh.valueh = convert.(Float64, df_ACS_hh.valueh)
+    df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .= 12 .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs] ./ df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs_valueh_ratio]
+    
     #=
     # Potential Earnings Regression using FE package -> fast
     ols_potential_earnings_ACS_fe = reg(df_ACS_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
