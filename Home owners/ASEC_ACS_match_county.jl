@@ -80,6 +80,8 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
                     df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
                     df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
                 else
+                    df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
+                    df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
                     df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 3]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 3]);
                     df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 4]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 4]);
                 end
