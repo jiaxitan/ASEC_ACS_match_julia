@@ -14,16 +14,18 @@ using Distributions
 
 # Set function and output directory + ASEC, ACS, state info files
 dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
-file_ASEC       = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_00002.csv";
-file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_00011.csv";
+file_ASEC       = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
+file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
 file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
 fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
+sample = "baseline";
     
 # Prepare ACS and ASEC data
 # Potential income regressions are muted for speed, since we are not using potential income for now
 include(dir_functions * "ACS_ASEC_data_preparation.jl");
 include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
+include(dir_functions * "ACS_ASEC_sample_selection_FHSV.jl")
 include(dir_functions * "ACS_ASEC_inc_earned_person.jl")
 
 include(dir_functions * "ASEC_UNITSSTR_recode.jl")
@@ -43,7 +45,7 @@ include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
-df_ACS_hh, df_ASEC_hh = prepare_data();
+    df_ACS_hh, df_ASEC_hh = prepare_data(sample);
 
 ## Evaluate share of topcoded home value
 #=
@@ -139,36 +141,46 @@ df_ASEC_hh_match_county = filter(r -> (r[:county] .!= 0), df_ASEC_hh_match); # S
 df_ASEC_hh_match_state = filter(r -> (r[:county] .== 0), df_ASEC_hh_match);  # Select obs with missing county for state matching
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home Owners/fit_proptxrate_income.jl");
+#select!(df_ACS_hh, Not(:txrate))
 fit_proptxrate_income!()
 df_ACS_hh.proptx99_recode = convert.(Float64, df_ACS_hh.proptx99_recode)
 df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :proptx99_recode] .= df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :txrate]
+
 df_ACS_hh_match = deepcopy(df_ACS_hh);
 df_ACS_hh_match_county = filter(r -> (r[:county] .!= 0), df_ACS_hh_match); # Select obs with county for county matching
 df_ACS_hh_match_state = filter(r -> (r[:county] .== 0), df_ACS_hh_match);  # Select obs with missing county for state matching
 
 ## 2005 and 2006
 df_ASEC_hh_match_0506_final = ASEC_ACS_match([2005, 2006], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+insertcols!(df_ASEC_hh_match_0506_final, :YEAR_reference => df_ASEC_hh_match_0506_final.YEAR)
 
 ## 2010 and 2011
 df_ASEC_hh_match_1011_final = ASEC_ACS_match([2010, 2011], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+insertcols!(df_ASEC_hh_match_1011_final, :YEAR_reference => df_ASEC_hh_match_1011_final.YEAR)
 
 ## 2015 and 2016
 df_ASEC_hh_match_1516_final = ASEC_ACS_match([2015, 2016], df_ASEC_hh_match_county, df_ACS_hh_match_county, df_ASEC_hh_match_state, df_ACS_hh_match_state, matching_set);
+insertcols!(df_ASEC_hh_match_1516_final, :YEAR_reference => df_ASEC_hh_match_1516_final.YEAR)
 
 ## Save results
 
-#df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-#df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-#df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
 
-#sort!(df_ASEC_hh_match_0506_save, [:YEAR, :SERIAL]);
-#sort!(df_ASEC_hh_match_1011_save, [:YEAR, :SERIAL]);
-#sort!(df_ASEC_hh_match_1516_save, [:YEAR, :SERIAL]);
+sort!(df_ASEC_hh_match_0506_save, [:YEAR_reference, :SERIAL]);
+sort!(df_ASEC_hh_match_1011_save, [:YEAR_reference, :SERIAL]);
+sort!(df_ASEC_hh_match_1516_save, [:YEAR_reference, :SERIAL]);
 
-CSV.write(dir_out * "ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_final);
-CSV.write(dir_out * "ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_final);
-CSV.write(dir_out * "ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_final);
-
+if sample == "baseline"
+    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
+    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
+    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+elseif sample == "full"
+    CSV.write(dir_out * "full_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
+    CSV.write(dir_out * "full_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
+    CSV.write(dir_out * "full_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+end
 #=
 ## Density plot for match quality on each matching variable, for the original matching set with 7 variables
 

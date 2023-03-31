@@ -1,8 +1,8 @@
-
+using PlotlyJS, Plots, Distributions
 ### Property Taxes for renters (based on GLVs procedure)
 
-## Note: df_main_hh is the sample selected from ASEC
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/match_ASEC_ACS_0506_1011_1516.jl");
+## This is the case when we fit property tax rate in ACS first, and then match to ASEC
 df_ASEC_owners = df_ASEC_hh_match_0506_final[df_ASEC_hh_match_0506_final.ownershp .== 10, :];
 df_ASEC_renters = df_ASEC_hh_match_0506_final[df_ASEC_hh_match_0506_final.ownershp .!= 10, :];
 
@@ -16,6 +16,42 @@ insertcols!(df_ASEC_renters, :proptx99_recode => df_ASEC_renters.ACS_proptax_mea
 df_ASEC_owners.txrate = df_ASEC_owners.proptx99_recode ./ df_ASEC_owners.valueh;
 df_ASEC_renters.txrate = df_ASEC_renters.proptx99_recode ./ df_ASEC_renters.valueh;
 
+## This is the case when we match to ASEC first, and then fit property tax rate in ASEC
+include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/fit_proptxrate_income.jl")
+
+file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
+file_home_value = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv";
+    
+df_rentgrs = CSV.read(file_rent_paid, DataFrame);
+df_valueh = CSV.read(file_home_value, DataFrame);
+df_annual_rentgrs_to_valueh = 12 .* df_rentgrs[:,2:end] ./ df_valueh[:,2:end];
+insertcols!(df_annual_rentgrs_to_valueh, 1, :statename => df_rentgrs.Column1);
+df_annual_rentgrs_to_valueh = DataFrames.stack(df_annual_rentgrs_to_valueh, Not(:statename));
+rename!(df_annual_rentgrs_to_valueh, :variable => :YEAR, :value => :rentgrs_valueh_ratio);
+df_annual_rentgrs_to_valueh.YEAR = convert.(Int64, parse.(Int64, df_annual_rentgrs_to_valueh.YEAR));
+
+df_ASEC_hh = copy(df_ASEC_hh_match_0506_final)
+append!(df_ASEC_hh, df_ASEC_hh_match_1011_final)
+append!(df_ASEC_hh, df_ASEC_hh_match_1516_final)
+
+insertcols!(df_ASEC_hh, :valueh => df_ASEC_hh.ACS_valueh_mean);
+insertcols!(df_ASEC_hh, :proptx99_recode => df_ASEC_hh.ACS_proptax_mean);
+insertcols!(df_ASEC_hh, :rentgrs => df_ASEC_hh.ACS_rentgrs_mean);
+insertcols!(df_ASEC_hh, :YEAR => df_ASEC_hh.YEAR_reference);
+
+df_ASEC_hh = leftjoin(df_ASEC_hh, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR_survey => :YEAR]);
+df_ASEC_hh.valueh = convert.(Float64, df_ASEC_hh.valueh)
+df_ASEC_hh[df_ASEC_hh.ownershp .!= 10.0, :valueh] .= 12 .* df_ASEC_hh[df_ASEC_hh.ownershp .!= 10.0, :rentgrs] ./ df_ASEC_hh[df_ASEC_hh.ownershp .!= 10.0, :rentgrs_valueh_ratio]
+
+select!(df_ASEC_hh, Not(:txrate))
+fit_proptxrate_income_ASEC!()
+df_ASEC_owners = df_ASEC_hh[(in([2005,2006]).(df_ASEC_hh.YEAR)) .& (df_ASEC_hh.ownershp .== 10), :];
+df_ASEC_renters = df_ASEC_hh[(in([2005,2006]).(df_ASEC_hh.YEAR)) .& (df_ASEC_hh.ownershp .!= 10), :];
+
+select!(df_ASEC_hh, Not(:txrate))
+fit_proptxrate_income_ASEC_old!()
+df_ASEC_owners = df_ASEC_hh[(in([2005,2006]).(df_ASEC_hh.YEAR)) .& (df_ASEC_hh.ownershp .== 10), :];
+df_ASEC_renters = df_ASEC_hh[(in([2005,2006]).(df_ASEC_hh.YEAR)) .& (df_ASEC_hh.ownershp .!= 10), :];
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/inc_valueh_rentgrs_regressivity.jl");
 ## National plots - ASEC
@@ -47,13 +83,13 @@ df_owners_mean = engel_owners_data_state(df_ASEC_owners, 10);
 df_renters_mean = engel_renters_data_state(df_ASEC_renters, 10);
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/proptx_owners_renters.jl");
-proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ASEC Property Tax - ", "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state/")
+proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ASEC Property Tax - ", "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax fe regression ASEC/")
 # proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state_avg rent to price/")
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/txrate_owners_renters.jl");
-txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State-level fitting/")
+txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate fe regression ASEC/")
 
-# Compare home charateristics of owners and renters\
+# Compare home charateristics of owners and renters
 df_ACS_owners = df_ACS_hh[(in([2005,2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .== 1), :];
 df_ACS_renters = df_ACS_hh[(in([2005,2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .!= 1), :];
 
@@ -196,20 +232,9 @@ scatter!(df_ACS_renters.grossinc_log, df_ACS_renters.rooms, label="renters")
 
 ## Same exericise for ACS renters
 df_ACS_owners = df_ACS_hh[(in([2005, 2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .== 1), :];
-insertcols!(df_ACS_owners, size(df_ACS_owners, 2)+1, :txrate => df_ACS_owners.proptx99_recode ./ df_ACS_owners.valueh);
-df_ACS_owners[df_ACS_owners.valueh .== 0, :txrate] .= 0;
-
 df_ACS_renters = df_ACS_hh[(in([2005, 2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .!= 1), :];
-df_ACS_renters = leftjoin(df_ACS_renters, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR]);
-insertcols!(df_ACS_renters, :valueh_renters_mean => 12 .* df_ACS_renters.rentgrs ./ df_ACS_renters.rentgrs_valueh_ratio);
-
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/fit_proptxrate_income.jl");
-fit_proptxrate_income_ACS!();
-
-df_ACS_renters.proptx99_recode = df_ACS_renters.txrate .* df_ACS_renters.valueh_renters_mean;
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/inc_valueh_rentgrs_regressivity.jl");
-df_ACS_renters.valueh = 12 .* df_ACS_renters.rentgrs ./ df_ACS_renters.rentgrs_valueh_ratio;
 df_owners_mean = engel_owners_data_state(df_ACS_owners, 1);
 df_renters_mean = engel_renters_data_state(df_ACS_renters, 1);
 
@@ -266,11 +291,11 @@ savefig("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Impu
 
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/proptx_owners_renters.jl");
-proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ACS Property Tax - ", "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state ACS/")
+proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ACS Property Tax - ", "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax NEW fe regression ACS/")
 # proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state_avg rent to price/")
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/txrate_owners_renters.jl");
-txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate fitting ACS/")
+txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate NEW fe regression ACS/")
 
 p1 = scatter(df_owners_mean.log_grossinc_mean[df_owners_mean.statename .== "California"], df_owners_mean.log_proptx_mean[df_owners_mean.statename .== "California"],
     label = "CA",

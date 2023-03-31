@@ -7,7 +7,7 @@
 # For ASEC renters: get rent and gross rent paid
 # NOTE: for ACS, split potential earnings regression by years to speed up/avoid crashes
 
-function prepare_data()
+function prepare_data(sample::String)
 
     # Import state info
     df_state_info = CSV.read(file_state_info, DataFrame; types=[Int64, Int64, String, String, String, Int64, Int64]);
@@ -31,8 +31,14 @@ function prepare_data()
     replace!(df_ASEC.INCASIST, 9999999=>0); df_ASEC[!, :INCASIST] = collect(skipmissing(df_ASEC.INCASIST));
     replace!(df_ASEC.PROPTAX,  99997=>0);   df_ASEC[!, :PROPTAX] = collect(skipmissing(df_ASEC.PROPTAX));   # 99997 = Missing
 
+    # Distinguish reference years and survey years
+    # So :YEAR is reference year, and :YEAR_survey is the corresponding survey year
+    insertcols!(df_ASEC, :YEAR_survey => df_ASEC.YEAR)
+    df_ASEC.YEAR = df_ASEC.YEAR .- 1
+
     # Apply FHSV sample selection
-    df_ASEC_sample = ACS_ASEC_selection_sampleB(df_ASEC);
+    insertcols!(df_ASEC, :YEAR_reference => df_ASEC.YEAR)
+    df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample);
 
 
     # Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
@@ -52,6 +58,7 @@ function prepare_data()
     filter!(r -> (r[:grossinc] .> 0), df_ASEC_hh); # Innocent
     df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
     sort!(df_ASEC_hh, :grossinc)
+    df_ASEC_hh.YEAR_survey = df_ASEC_hh.YEAR .+ 1
 
     #= 
     # Potential Earnings Regression using FE package -> fast
@@ -117,8 +124,14 @@ function prepare_data()
     replace!(df_ACS.INCINVST, 999999=>0); # Interest, dividend, and rental income; has negative values -> bottom coded at -9999
     replace!(df_ACS.VALUEH,   9999999=>0); # Value of housing units in contemporary dollars; Missing == 9999999
 
+    # Distinguish reference years and survey years
+    # So :YEAR is reference year, and :YEAR_survey is the corresponding survey year
+    insertcols!(df_ACS, :YEAR_survey => df_ACS.YEAR)
+    df_ACS.YEAR = df_ACS.YEAR .- 1
+
     # Apply FHSV sample selection
-    df_ACS_sample0 = ACS_ASEC_selection_sampleB(df_ACS);
+    insertcols!(df_ACS, :YEAR_reference => df_ACS.YEAR)
+    df_ACS_sample0 = ACS_ASEC_sample_selection_FHSV(df_ACS, sample);
 
     # Add state info
     df_ACS_sample = innerjoin(df_ACS_sample0, df_state_info, on = :STATEFIPS);
@@ -159,6 +172,7 @@ function prepare_data()
     filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
     df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
     df_ACS_hh[:, :proptx_log] = log.(df_ACS_hh[:, :proptx99_recode]);
+    df_ACS_hh.YEAR_survey = df_ACS_hh.YEAR .+ 1
 
     #Impute home value for renters from Zillow data
     file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
@@ -172,7 +186,7 @@ function prepare_data()
     rename!(df_annual_rentgrs_to_valueh, :variable => :YEAR, :value => :rentgrs_valueh_ratio);
     df_annual_rentgrs_to_valueh.YEAR = convert.(Int64, parse.(Int64, df_annual_rentgrs_to_valueh.YEAR));
 
-    df_ACS_hh = leftjoin(df_ACS_hh, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR]);
+    df_ACS_hh = leftjoin(df_ACS_hh, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR_survey => :YEAR]);
     df_ACS_hh.valueh = convert.(Float64, df_ACS_hh.valueh)
     df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .= 12 .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs] ./ df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs_valueh_ratio]
     
