@@ -19,7 +19,7 @@ file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_ref
 file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
 fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
-sample = "baseline";
+sample = "full";
     
 # Prepare ACS and ASEC data
 # Potential income regressions are muted for speed, since we are not using potential income for now

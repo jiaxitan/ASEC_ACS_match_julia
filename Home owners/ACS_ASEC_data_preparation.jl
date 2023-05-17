@@ -40,7 +40,6 @@ function prepare_data(sample::String)
     insertcols!(df_ASEC, :YEAR_reference => df_ASEC.YEAR)
     df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample);
 
-
     # Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
     ASEC_UNITSSTR_recode!(df_ASEC_sample);
     ASEC_EDUC_recode!(df_ASEC_sample);
