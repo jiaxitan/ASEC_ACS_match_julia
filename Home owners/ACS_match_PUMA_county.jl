@@ -50,8 +50,8 @@ function ACS_match_PUMA_county!(df_ACS, df_state_info)
 
     insertcols!(df_ACS, size(df_ACS,2)+1, :COUNTYFIPS2 => df_ACS.COUNTYFIPS);
     
-    df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR .< 2012), :COUNTYFIPS2] .=  leftjoin_by_year(df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR .< 2012), :], df_PUMA_county00);
-    df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR .>= 2012), :COUNTYFIPS2] .=  leftjoin_by_year(df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR .>= 2012), :], df_PUMA_county10);
+    df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR_survey .< 2012), :COUNTYFIPS2] .=  leftjoin_by_year(df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR_survey .< 2012), :], df_PUMA_county00);
+    df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR_survey .>= 2012), :COUNTYFIPS2] .=  leftjoin_by_year(df_ACS[(df_ACS.COUNTYFIPS2 .== 0) .& (df_ACS.YEAR_survey .>= 2012), :], df_PUMA_county10);
 
 end
 

@@ -28,7 +28,8 @@ function ACS_ASEC_selection_sampleB(df)
         RELATE_test = count(i->(i==1 || i==2 || i==101 || i==201), group.RELATE)    # Skip record if not at least one head
         if age_test > 0 && RELATE_test > 0
             minwage = lookup_minwage(group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :YEAR])
-            head_age  = group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :AGE]
+            # Need to -1 to get reference year age
+            head_age  = group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :AGE] .- 1
             head_work = group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :WKSWORK2]
             if ACS_INCBUS00 == 1
                 head_inc = group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :INCWAGE] .+ group[findfirst(x -> (x == 1 || x == 101), group.RELATE), :INCBUS00]
