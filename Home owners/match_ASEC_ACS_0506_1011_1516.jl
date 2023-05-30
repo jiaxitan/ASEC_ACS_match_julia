@@ -19,12 +19,12 @@ file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_ref
 file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
 fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
-sample = "full";
+sample = "baseline";
     
 # Prepare ACS and ASEC data
 # Potential income regressions are muted for speed, since we are not using potential income for now
 include(dir_functions * "ACS_ASEC_data_preparation.jl");
-include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
+#include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
 include(dir_functions * "ACS_ASEC_sample_selection_FHSV.jl")
 include(dir_functions * "ACS_ASEC_inc_earned_person.jl")
 
@@ -141,10 +141,52 @@ df_ASEC_hh_match_county = filter(r -> (r[:county] .!= 0), df_ASEC_hh_match); # S
 df_ASEC_hh_match_state = filter(r -> (r[:county] .== 0), df_ASEC_hh_match);  # Select obs with missing county for state matching
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home Owners/fit_proptxrate_income.jl");
-#select!(df_ACS_hh, Not(:txrate))
+select!(df_ACS_hh, Not(:txrate))
 fit_proptxrate_income!()
 df_ACS_hh.proptx99_recode = convert.(Float64, df_ACS_hh.proptx99_recode)
 df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :proptx99_recode] .= df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :txrate]
+
+sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .>= 1), :txrate])
+sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .< 1), :txrate])
+
+nrow(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+vscodedisplay(df_2010[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
+vscodedisplay(df_2015[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
+
+df_2015 = copy(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+sort!(df_2015, :txrate, rev=true)
+vscodedisplay(df_2015[df_2015.ownershp .!= 1, :])
+nrow(df_2015[(df_2015.ownershp .== 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .== 1, :])
+nrow(df_2015[(df_2015.ownershp .!= 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .!= 1, :])
+mean(df_2015[(df_2015.ownershp .!= 1) .& (df_2015.county .== 6085), :txrate])
+mean(df_2015[(df_2015.ownershp .== 1) .& (df_2015.txrate .< 1), :txrate])
+mean(df_2015[(df_2015.ownershp .== 1), :txrate])
+vscodedisplay(df_2015[(df_2015.ownershp .== 1) .& (df_2015.county .== 6085), :])
+vscodedisplay(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
+
+df_2010 = copy(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+sort!(df_2010, :txrate, rev=true)
+vscodedisplay(df_2010[df_2010.ownershp .== 1, :])
+nrow(df_2010[(df_2010.ownershp .== 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .== 1, :])
+nrow(df_2010[(df_2010.ownershp .!= 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .!= 1, :])
+nrow(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
+nrow(df_2010[(df_2010.ownershp .!= 1) .& (df_2010.county .== 6085), :])
+mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085) .& (df_2010.txrate .< 0.1), :txrate])
+mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :proptx99_recode])
+
+
+mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+
+mean(df_2010[1:50,:valueh] .* df_2010[1:50,:txrate])
+mean(df_2015[1:10,:valueh] .* df_2015[1:10,:txrate])
+
+mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :proptx99_recode])
+mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :proptx99_recode])
+mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :grossinc])
+mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :grossinc])
 
 df_ACS_hh_match = deepcopy(df_ACS_hh);
 df_ACS_hh_match_county = filter(r -> (r[:county] .!= 0), df_ACS_hh_match); # Select obs with county for county matching

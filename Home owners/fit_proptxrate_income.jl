@@ -16,15 +16,19 @@ function fit_proptxrate_income!()
         #df_state = DataFrame(state = String[], county = Int[],n_rent = Float64[], n_owner = Int[], txrate = Float64[])
 
         for state in unique(df_ACS_hh.statename)
-            println(state)
+            #println(state)
             df_renters_tmp_state = df_ACS_hh[(in(year).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== state), :]
             df_owners_tmp_state = df_ACS_hh[(in(year).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== state), :]
 
             #nyc_counties = [36081, 36005, 36061, 36047, 36085]
             #deleteat!(df_renters_tmp_state, in(nyc_counties).(df_renters_tmp_state.county))
             #deleteat!(df_owners_tmp_state, in(nyc_counties).(df_owners_tmp_state.county))
-            regression = FixedEffectModels.reg(df_owners_tmp_state[(.!isnan.(df_owners_tmp_state.txrate)), :], fm, save = :fe)
+            regression = FixedEffectModels.reg(df_owners_tmp_state[(.!isnan.(df_owners_tmp_state.txrate)) .& (df_owners_tmp_state.txrate .< 1), :], fm, save = :fe)
             df_renters_tmp_state = leftjoin(df_renters_tmp_state, unique(regression.fe), on = :county)
+            if state == "California"
+                CSV.write(dir_out * string(year[1]) * "county FE.csv", unique(regression.fe))
+                println(string(regression.coef[1]) * ", " * string(regression.coef[2]))
+            end
             df_renters_tmp_state.txrate .= df_renters_tmp_state.fe_county .+ df_renters_tmp_state.grossinc_log .* regression.coef[1] .+ ((df_renters_tmp_state.grossinc_log).^2) .* regression.coef[2]
             select!(df_renters_tmp_state, Not(:fe_county))
             
