@@ -141,7 +141,7 @@ df_ASEC_hh_match_county = filter(r -> (r[:county] .!= 0), df_ASEC_hh_match); # S
 df_ASEC_hh_match_state = filter(r -> (r[:county] .== 0), df_ASEC_hh_match);  # Select obs with missing county for state matching
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home Owners/fit_proptxrate_income.jl");
-select!(df_ACS_hh, Not(:txrate))
+#select!(df_ACS_hh, Not(:txrate))
 fit_proptxrate_income!()
 df_ACS_hh.proptx99_recode = convert.(Float64, df_ACS_hh.proptx99_recode)
 df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :proptx99_recode] .= df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :txrate]
