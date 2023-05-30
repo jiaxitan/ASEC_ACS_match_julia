@@ -13,12 +13,12 @@ using Distributions
 ## Housekeeping
 
 # Set function and output directory + ASEC, ACS, state info files
-dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
-file_ASEC       = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
-file_ACS        = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
-file_state_info = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
-dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
-fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
+dir_functions   = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Home owners"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
+file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample5_cps_00091.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
+file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS/usa_00044.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
+file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips_names.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
+#dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
+#fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
 sample = "baseline";
     
 # Prepare ACS and ASEC data
