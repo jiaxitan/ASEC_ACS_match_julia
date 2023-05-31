@@ -1,6 +1,6 @@
 ### Write the function that fits property tax rate to income at county (wherever possible) and state level, and impute property tax
 using FixedEffectModels
-using RDatasets, DataFrames
+using DataFrames #RDatasets
 
 function fit_proptxrate_income!()
     years = [[2005,2006], [2010,2011], [2015,2016]]
@@ -26,7 +26,7 @@ function fit_proptxrate_income!()
             regression = FixedEffectModels.reg(df_owners_tmp_state[(.!isnan.(df_owners_tmp_state.txrate)) .& (df_owners_tmp_state.txrate .< 1), :], fm, save = :fe)
             df_renters_tmp_state = leftjoin(df_renters_tmp_state, unique(regression.fe), on = :county)
             if state == "California"
-                CSV.write(dir_out * string(year[1]) * "county FE.csv", unique(regression.fe))
+                CSV.write(dir_out_fit_proptxrate * string(year[1]) * "county FE.csv", unique(regression.fe))
                 println(string(regression.coef[1]) * ", " * string(regression.coef[2]))
             end
             df_renters_tmp_state.txrate .= df_renters_tmp_state.fe_county .+ df_renters_tmp_state.grossinc_log .* regression.coef[1] .+ ((df_renters_tmp_state.grossinc_log).^2) .* regression.coef[2]

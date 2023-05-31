@@ -17,7 +17,8 @@ dir_functions   = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Home 
 file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample9_cps_00095.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
 file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS_property_taxes/prop_tax_imputation_usa_00048.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
 file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips_names.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
-#dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
+dir_out_fit_proptxrate  = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/fit_proptxrate/";
+dir_out_results  = "/Users/main/Documents/Dropbox/Research/Tax_prog_fed_state_local/!main_local/data/property_taxes/";
 #fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
 sample = "baseline";
     
@@ -44,6 +45,8 @@ include(dir_functions * "ACS_PROPTX99_recode.jl")
 include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
+
+include(dir_functions * "fit_proptxrate_income.jl")
 
 df_ACS_hh, df_ASEC_hh = prepare_data(sample);
 
@@ -140,53 +143,119 @@ df_ASEC_hh_match = deepcopy(df_ASEC_hh);
 df_ASEC_hh_match_county = filter(r -> (r[:county] .!= 0), df_ASEC_hh_match); # Select obs with county for county matching
 df_ASEC_hh_match_state = filter(r -> (r[:county] .== 0), df_ASEC_hh_match);  # Select obs with missing county for state matching
 
-include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home Owners/fit_proptxrate_income.jl");
+#include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home Owners/fit_proptxrate_income.jl");
 #select!(df_ACS_hh, Not(:txrate))
 fit_proptxrate_income!()
-df_ACS_hh.proptx99_recode = convert.(Float64, df_ACS_hh.proptx99_recode)
-df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :proptx99_recode] .= df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :txrate]
-
-sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .>= 1), :txrate])
-sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .< 1), :txrate])
-
-nrow(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
-vscodedisplay(df_2010[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
-vscodedisplay(df_2015[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
-
-df_2015 = copy(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
-sort!(df_2015, :txrate, rev=true)
-vscodedisplay(df_2015[df_2015.ownershp .!= 1, :])
-nrow(df_2015[(df_2015.ownershp .== 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .== 1, :])
-nrow(df_2015[(df_2015.ownershp .!= 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .!= 1, :])
-mean(df_2015[(df_2015.ownershp .!= 1) .& (df_2015.county .== 6085), :txrate])
-mean(df_2015[(df_2015.ownershp .== 1) .& (df_2015.txrate .< 1), :txrate])
-mean(df_2015[(df_2015.ownershp .== 1), :txrate])
-vscodedisplay(df_2015[(df_2015.ownershp .== 1) .& (df_2015.county .== 6085), :])
-vscodedisplay(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
-
-df_2010 = copy(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
-sort!(df_2010, :txrate, rev=true)
-vscodedisplay(df_2010[df_2010.ownershp .== 1, :])
-nrow(df_2010[(df_2010.ownershp .== 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .== 1, :])
-nrow(df_2010[(df_2010.ownershp .!= 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .!= 1, :])
-nrow(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
-nrow(df_2010[(df_2010.ownershp .!= 1) .& (df_2010.county .== 6085), :])
-mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085) .& (df_2010.txrate .< 0.1), :txrate])
-mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :proptx99_recode])
+df_ACS_hh.proptx99_recode = convert.(Float64, df_ACS_hh.proptx99_recode);
+df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :proptx99_recode] .= df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :txrate];
 
 
-mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
-mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
-mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
-mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+## Plot ACS mean renter property taxes by state and sample years -- BEFORE MATCHING
 
-mean(df_2010[1:50,:valueh] .* df_2010[1:50,:txrate])
-mean(df_2015[1:10,:valueh] .* df_2015[1:10,:txrate])
+insertcols!(df_ACS_hh, 1, :sample_year => 1);
+for i = 1:nrow(df_ACS_hh)
+    if df_ACS_hh[i, :YEAR] == 2010 || df_ACS_hh[i, :YEAR] == 2011
+        df_ACS_hh[i, :sample_year] = 2
+    elseif df_ACS_hh[i, :YEAR] == 2015 || df_ACS_hh[i, :YEAR] == 2016
+        df_ACS_hh[i, :sample_year] = 3
+    end
+end
 
-mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :proptx99_recode])
-mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :proptx99_recode])
-mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :grossinc])
-mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :grossinc])
+df_plot_proptaxes_owners_renters_tmp = combine(groupby(df_ACS_hh, [:statename, :sample_year, :ownershp]), :proptx99_recode => mean => :proptax_mean);
+df_plot_proptaxes_owners_renters = unstack(df_plot_proptaxes_owners_renters_tmp, :sample_year, :proptax_mean, renamecols=x->Symbol(:proptax_mean_sample_year, x));
+
+df_plot_proptaxes_owners  = filter(r -> (r[:ownershp] .== 1), df_plot_proptaxes_owners_renters);
+df_plot_proptaxes_renters = filter(r -> (r[:ownershp] .== 2), df_plot_proptaxes_owners_renters);
+
+@df df_plot_proptaxes_owners groupedbar(:statename, cols(3:5),
+bar_position = :dodge,
+title = "ACS: Mean Property Taxes of Owners - reported (current \$)",
+titlefontsize = 10,
+legend = :topleft,
+label = ["2005/2006" "2010/2011" "2015/2016"],
+background_color_legend = :white,
+#bar_width = 0.8,
+xticks = ([0.5:1:51.5;], df_plot_proptaxes_owners.statename),
+xrotation=90,
+tickfont=font(5),
+legendfontsize = 6,
+xlims = (0,51),
+# ylims = (-0.05,0.2),
+# yticks = (-0.05:0.05:0.2),
+tick_direction = :out,
+left_margin = 0mm,
+bottom_margin = 6mm,
+grid = true)
+savefig( "/Users/main/Downloads/ACS_state_owners_proptaxes_mean.pdf" )
+
+@df df_plot_proptaxes_renters groupedbar(:statename, cols(3:5),
+bar_position = :dodge,
+title = "ACS: Mean Property Taxes of Renters - imputed (current \$)",
+titlefontsize = 10,
+legend = :topleft,
+label = ["2005/2006" "2010/2011" "2015/2016"],
+background_color_legend = :white,
+#bar_width = 0.8,
+xticks = ([0.5:1:51.5;], df_plot_proptaxes_renters.statename),
+xrotation=90,
+tickfont=font(5),
+legendfontsize = 6,
+xlims = (0,51),
+# ylims = (-0.05,0.2),
+# yticks = (-0.05:0.05:0.2),
+tick_direction = :out,
+left_margin = 0mm,
+bottom_margin = 6mm,
+grid = true)
+savefig( "/Users/main/Downloads/ACS_state_renters_proptaxes_mean.pdf" )
+
+
+# ## CODES TO INVESTIGATE SPECIFIC COUNTIES AND STATES
+
+# sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .>= 1), :txrate])
+# sum(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California") .& (df_ACS_hh.txrate .< 1), :txrate])
+
+# nrow(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+# vscodedisplay(df_2010[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
+# vscodedisplay(df_2015[:,[:grossinc, :valueh, :txrate, :proptx99_recode]])
+
+# df_2015 = copy(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+# sort!(df_2015, :txrate, rev=true)
+# vscodedisplay(df_2015[df_2015.ownershp .!= 1, :])
+# nrow(df_2015[(df_2015.ownershp .== 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .== 1, :])
+# nrow(df_2015[(df_2015.ownershp .!= 1) .& ((df_2015.county .== 6085) .| (df_2015.county .== 6075)), :])/nrow(df_2015[df_2015.ownershp .!= 1, :])
+# mean(df_2015[(df_2015.ownershp .!= 1) .& (df_2015.county .== 6085), :txrate])
+# mean(df_2015[(df_2015.ownershp .== 1) .& (df_2015.txrate .< 1), :txrate])
+# mean(df_2015[(df_2015.ownershp .== 1), :txrate])
+# vscodedisplay(df_2015[(df_2015.ownershp .== 1) .& (df_2015.county .== 6085), :])
+# vscodedisplay(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
+
+# df_2010 = copy(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.statename .== "California"), :])
+# sort!(df_2010, :txrate, rev=true)
+# vscodedisplay(df_2010[df_2010.ownershp .== 1, :])
+# nrow(df_2010[(df_2010.ownershp .== 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .== 1, :])
+# nrow(df_2010[(df_2010.ownershp .!= 1) .& ((df_2010.county .== 6085) .| (df_2010.county .== 6075)), :])/nrow(df_2010[df_2010.ownershp .!= 1, :])
+# nrow(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :])
+# nrow(df_2010[(df_2010.ownershp .!= 1) .& (df_2010.county .== 6085), :])
+# mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085) .& (df_2010.txrate .< 0.1), :txrate])
+# mean(df_2010[(df_2010.ownershp .== 1) .& (df_2010.county .== 6085), :proptx99_recode])
+
+
+# mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+# mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+# mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+# mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== "California"), :valueh])
+
+# mean(df_2010[1:50,:valueh] .* df_2010[1:50,:txrate])
+# mean(df_2015[1:10,:valueh] .* df_2015[1:10,:txrate])
+
+# mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :proptx99_recode])
+# mean(df_ACS_hh[in([2015,2016]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :proptx99_recode])
+# mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .== 1.0), :grossinc])
+# mean(df_ACS_hh[in([2010,2011]).(df_ACS_hh.YEAR) .& (df_ACS_hh.ownershp .!= 1.0), :grossinc])
+
+
+## ACS-ASEC Matching starts here
 
 df_ACS_hh_match = deepcopy(df_ACS_hh);
 df_ACS_hh_match_county = filter(r -> (r[:county] .!= 0), df_ACS_hh_match); # Select obs with county for county matching
@@ -215,14 +284,85 @@ sort!(df_ASEC_hh_match_1011_save, [:YEAR_reference, :SERIAL]);
 sort!(df_ASEC_hh_match_1516_save, [:YEAR_reference, :SERIAL]);
 
 if sample == "baseline"
-    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
-    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
-    CSV.write(dir_out * "baseline_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+    CSV.write(dir_out_results * "baseline_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
+    CSV.write(dir_out_results * "baseline_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
+    CSV.write(dir_out_results * "baseline_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
 elseif sample == "full"
-    CSV.write(dir_out * "full_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
-    CSV.write(dir_out * "full_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
-    CSV.write(dir_out * "full_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+    CSV.write(dir_out_results * "full_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
+    CSV.write(dir_out_results * "full_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
+    CSV.write(dir_out_results * "full_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
 end
+
+
+## Plot ASEC mean renter property taxes by state and sample years -- AFTER MATCHING
+
+df_plot_matched_prop_taxes_owners_renters_tmp = vcat(df_ASEC_hh_match_0506_save, df_ASEC_hh_match_1011_save, df_ASEC_hh_match_1516_save);
+
+insertcols!(df_plot_matched_prop_taxes_owners_renters_tmp, 1, :ownershp => 2);
+insertcols!(df_plot_matched_prop_taxes_owners_renters_tmp, 1, :sample_year => 1);
+for i = 1:nrow(df_plot_matched_prop_taxes_owners_renters_tmp)
+
+    if df_plot_matched_prop_taxes_owners_renters_tmp[i, :ACS_rentgrs_mean] == -2 df_plot_matched_prop_taxes_owners_renters_tmp[i, :ownershp] = 1 end
+
+    if df_plot_matched_prop_taxes_owners_renters_tmp[i, :YEAR_reference] == 2010 || df_plot_matched_prop_taxes_owners_renters_tmp[i, :YEAR_reference] == 2011
+        df_plot_matched_prop_taxes_owners_renters_tmp[i, :sample_year] = 2
+    elseif df_plot_matched_prop_taxes_owners_renters_tmp[i, :YEAR_reference] == 2015 || df_plot_matched_prop_taxes_owners_renters_tmp[i, :YEAR_reference] == 2016
+        df_plot_matched_prop_taxes_owners_renters_tmp[i, :sample_year] = 3
+    end
+
+end
+
+df_plot_matched_prop_taxes_owners_renters_tmp2 = combine(groupby(df_plot_matched_prop_taxes_owners_renters_tmp, [:statename, :sample_year, :ownershp]), :ACS_proptax_mean => mean => :proptax_mean);
+df_plot_matched_prop_taxes_owners_renters = unstack(df_plot_matched_prop_taxes_owners_renters_tmp2, :sample_year, :proptax_mean, renamecols=x->Symbol(:proptax_mean_sample_year, x));
+sort!(df_plot_matched_prop_taxes_owners_renters, :statename);
+
+df_plot_matched_proptaxes_owners  = filter(r -> (r[:ownershp] .== 1), df_plot_matched_prop_taxes_owners_renters);
+df_plot_matched_proptaxes_renters = filter(r -> (r[:ownershp] .== 2), df_plot_matched_prop_taxes_owners_renters);
+
+@df df_plot_matched_proptaxes_owners groupedbar(:statename, cols(3:5),
+bar_position = :dodge,
+title = "ASEC: Mean Property Taxes of Owners - reported and matched (current \$)",
+titlefontsize = 10,
+legend = :topleft,
+label = ["2005/2006" "2010/2011" "2015/2016"],
+background_color_legend = :white,
+#bar_width = 0.8,
+xticks = ([0.5:1:51.5;], df_plot_matched_proptaxes_owners.statename),
+xrotation=90,
+tickfont=font(5),
+legendfontsize = 6,
+xlims = (0,51),
+# ylims = (-0.05,0.2),
+# yticks = (-0.05:0.05:0.2),
+tick_direction = :out,
+left_margin = 0mm,
+bottom_margin = 6mm,
+grid = true)
+savefig( "/Users/main/Downloads/ASEC_matched_state_owners_proptaxes_mean.pdf" )
+
+@df df_plot_matched_proptaxes_renters groupedbar(:statename, cols(3:5),
+bar_position = :dodge,
+title = "ASEC: Mean Property Taxes of Renters - imputed and matched (current \$)",
+titlefontsize = 10,
+legend = :topleft,
+label = ["2005/2006" "2010/2011" "2015/2016"],
+background_color_legend = :white,
+#bar_width = 0.8,
+xticks = ([0.5:1:51.5;], df_plot_matched_proptaxes_renters.statename),
+xrotation=90,
+tickfont=font(5),
+legendfontsize = 6,
+xlims = (0,51),
+# ylims = (-0.05,0.2),
+# yticks = (-0.05:0.05:0.2),
+tick_direction = :out,
+left_margin = 0mm,
+bottom_margin = 6mm,
+grid = true)
+savefig( "/Users/main/Downloads/ASEC_matched_state_renters_proptaxes_mean.pdf" )
+
+
+
 #=
 ## Density plot for match quality on each matching variable, for the original matching set with 7 variables
 
