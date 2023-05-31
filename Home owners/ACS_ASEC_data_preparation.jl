@@ -16,7 +16,7 @@ function prepare_data(sample::String)
     ## Import and prepare ASEC file
     df_ASEC_0 = CSV.read(file_ASEC, DataFrame);
 
-    select!(df_ASEC_0, Not([:MONTH, :CPSID, :ASECFLAG, :ASECWTH, :CPSIDP, :ASECWT, :CBSASZ]));
+    select!(df_ASEC_0, Not([:MONTH, :CPSID, :ASECFLAG, :ASECWTH, :CPSIDP, :ASECWT])); # CBSASZ
     rename!(df_ASEC_0, :STATEFIP => :STATEFIPS);
 
     # Add state info
@@ -102,11 +102,11 @@ function prepare_data(sample::String)
     # # df_ASEC_hh = combine(ASEC_gdf_hh, nrow=>:size, :AGE=>first=>:age, :SEX=>first=>:sex, :RACE_recodes=>first=>:race_recodes, :EDUC_recodes=>first=>:educ_recodes, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY=>first=>:county, :COUNTY_name_state_county=>first=>:county_name_state_county, :METFIPS=>first=>:metfips, :INDIVIDCC=>first=>:individcc, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :PROPTAX=>first=>:proptax, :INCWAGE=>sum=>:incwage, :INCBUS=>sum=>:incbus, :INCFARM=>sum=>:incfarm, :INCINT=>sum=>:incint, :INCDIVID=>sum=>:incdivid, :INCRENT=>sum=>:incrent, :INCASIST=>sum=>:incasist, :GROSSINC_potential=>sum=>:grossinc_potential);
     # # insertcols!(df_ASEC_hh, 3, :grossinc => df_ASEC_hh.incwage + df_ASEC_hh.incbus + df_ASEC_hh.incfarm + df_ASEC_hh.incint + df_ASEC_hh.incdivid + df_ASEC_hh.incrent + df_ASEC_hh.incasist);
 
-    ASEC_missing_COUNTY_share  = count(i -> (i .== 0), df_ASEC_hh.county)/size(df_ASEC_hh,1)*100         # Compute share of observations with missing COUNTY
-    ASEC_missing_METRO_share   = count(i -> (i .== 0 || i .== 4 || i .== 9 ), df_ASEC_hh.metro)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing METFIPS
-    ASEC_missing_METAREA_share = count(i -> (i .>= 9997), df_ASEC_hh.metarea)/size(df_ASEC_hh,1)*100    # Compute share of observations with missing METAREA
-    ASEC_missing_METFIPS_share = count(i -> (i .>= 99998), df_ASEC_hh.metfips)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing METFIPS
-    ASEC_missing_INDIVIDCC_share = count(i -> (i .== 0), df_ASEC_hh.individcc)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing INDIVIDCC
+    # ASEC_missing_COUNTY_share  = count(i -> (i .== 0), df_ASEC_hh.county)/size(df_ASEC_hh,1)*100         # Compute share of observations with missing COUNTY
+    # ASEC_missing_METRO_share   = count(i -> (i .== 0 || i .== 4 || i .== 9 ), df_ASEC_hh.metro)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing METFIPS
+    # ASEC_missing_METAREA_share = count(i -> (i .>= 9997), df_ASEC_hh.metarea)/size(df_ASEC_hh,1)*100    # Compute share of observations with missing METAREA
+    # ASEC_missing_METFIPS_share = count(i -> (i .>= 99998), df_ASEC_hh.metfips)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing METFIPS
+    # ASEC_missing_INDIVIDCC_share = count(i -> (i .== 0), df_ASEC_hh.individcc)/size(df_ASEC_hh,1)*100   # Compute share of observations with missing INDIVIDCC
 
 
     ## Import and prepare ACS file
@@ -174,8 +174,8 @@ function prepare_data(sample::String)
     df_ACS_hh.YEAR_survey = df_ACS_hh.YEAR .+ 1
 
     #Impute home value for renters from Zillow data
-    file_rent_paid = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
-    file_home_value = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv";
+    file_rent_paid = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
+    file_home_value = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/State_Zhvi_AllHomes_IMPORT.csv";
     
     df_rentgrs = CSV.read(file_rent_paid, DataFrame);
     df_valueh = CSV.read(file_home_value, DataFrame);

@@ -5,16 +5,16 @@
 using CSV, DataFrames, StatsBase, Statistics
 using Plots, Plots.PlotMeasures, StatsPlots; gr()
 using GLM, PrettyTables, FixedEffectModels, RegressionTables, CategoricalArrays
-using TableView
+#using TableView
 using NearestNeighbors
-using HTTP
+#using HTTP
 using Distributions
 
 ## Housekeeping
 
 # Set function and output directory + ASEC, ACS, state info files
-dir_functions   = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Home owners"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
-file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample5_cps_00091.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
+dir_functions   = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Home owners/"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
+file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample9_cps_00095.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
 file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS/usa_00044.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
 file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips_names.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 #dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
@@ -45,7 +45,7 @@ include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
-    df_ACS_hh, df_ASEC_hh = prepare_data(sample);
+df_ACS_hh, df_ASEC_hh = prepare_data(sample);
 
 ## Evaluate share of topcoded home value
 #=
