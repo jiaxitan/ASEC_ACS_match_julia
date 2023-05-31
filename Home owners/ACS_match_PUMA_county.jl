@@ -37,8 +37,8 @@ function ACS_match_PUMA_county!(df_ACS, df_state_info)
         df_state = HTTP.get(string("https://www2.census.gov/geo/docs/reference/puma/PUMSEQ10_", state, ".txt"));
         df_state = CSV.read(df_state.body,delim = "             ",header = false, DataFrame);
         select!(df_state, 1);
-        filter!(r -> (SubString(r[1], 1, 3) == "796"), df_state);
-        append!(df_PUMA_county10, DataFrame(STATEFIPS = SubString.(df_state[:, 1], 4, 5), PUMA = SubString.(df_state[:, 1], 14, 18), COUNTYFIPS2 = SubString.(df_state[:, 1], 19, 21)));
+        filter!(r -> (SubString(string(r[1]), 1, 3) == "796"), df_state);
+        append!(df_PUMA_county10, DataFrame(STATEFIPS = SubString.(string.(df_state[:, 1]), 4, 5), PUMA = SubString.(string.(df_state[:, 1]), 14, 18), COUNTYFIPS2 = SubString.(string.(df_state[:, 1]), 19, 21)));
     end
 
     df_PUMA_county00 = parse.(Int64, df_PUMA_county00); df_PUMA_county10 = parse.(Int64, df_PUMA_county10);
