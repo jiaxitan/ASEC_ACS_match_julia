@@ -7,7 +7,7 @@ using Plots, Plots.PlotMeasures, StatsPlots; gr()
 using GLM, PrettyTables, FixedEffectModels, RegressionTables, CategoricalArrays
 #using TableView
 using NearestNeighbors
-#using HTTP
+using HTTP
 using Distributions
 
 ## Housekeeping
@@ -15,7 +15,7 @@ using Distributions
 # Set function and output directory + ASEC, ACS, state info files
 dir_functions   = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Home owners/"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/";
 file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample9_cps_00095.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/cps_reference_year.csv";
-file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS/usa_00044.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
+file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS_property_taxes/prop_tax_imputation_usa_00048.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
 file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips_names.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 #dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/";
 #fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
