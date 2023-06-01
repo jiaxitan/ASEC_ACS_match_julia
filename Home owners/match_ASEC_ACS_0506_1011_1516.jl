@@ -20,7 +20,7 @@ file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips
 dir_out_fit_proptxrate  = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/fit_proptxrate/";
 dir_out_results         = "/Users/main/Documents/Dropbox/Research/Tax_prog_fed_state_local/!main_local/data/property_taxes/";
 dir_fig                 = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Figures/";
-sample = "baseline";
+sample = "baseline"; #full
     
 # Prepare ACS and ASEC data
 # Potential income regressions are muted for speed, since we are not using potential income for now
@@ -186,7 +186,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( dir_fig * "ACS_state_owners_proptaxes_mean.pdf" )
+savefig( dir_fig * "ACS_state_owners_proptaxes_mean - " * sample * ".pdf" )
 
 @df df_plot_proptaxes_renters groupedbar(:statename, cols(3:5),
 bar_position = :dodge,
@@ -207,7 +207,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( dir_fig * "ACS_state_renters_proptaxes_mean.pdf" )
+savefig( dir_fig * "ACS_state_renters_proptaxes_mean - " * sample * ".pdf" )
 
 
 # ## CODES TO INVESTIGATE SPECIFIC COUNTIES AND STATES
@@ -338,7 +338,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( dir_fig * "ASEC_matched_state_owners_proptaxes_mean.pdf" )
+savefig( dir_fig * "ASEC_matched_state_owners_proptaxes_mean - " * sample * ".pdf" )
 
 @df df_plot_matched_proptaxes_renters groupedbar(:statename, cols(3:5),
 bar_position = :dodge,
@@ -359,7 +359,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( dir_fig * "ASEC_matched_state_renters_proptaxes_mean.pdf" )
+savefig( dir_fig * "ASEC_matched_state_renters_proptaxes_mean - " * sample * ".pdf" )
 
 
 
