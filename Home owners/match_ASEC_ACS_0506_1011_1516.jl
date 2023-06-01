@@ -18,8 +18,8 @@ file_ASEC       = "/Users/main/Documents/Dropbox/!data/ASEC/FHSV_ASEC_sample9_cp
 file_ACS        = "/Users/main/Documents/Dropbox/!data/ACS_property_taxes/prop_tax_imputation_usa_00048.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/usa_reference_year.csv";
 file_state_info = "/Users/main/Documents/Dropbox/!data/US_state_info/states_fips_names.csv"; # "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/states_fips_names.csv";
 dir_out_fit_proptxrate  = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/fit_proptxrate/";
-dir_out_results  = "/Users/main/Documents/Dropbox/Research/Tax_prog_fed_state_local/!main_local/data/property_taxes/";
-#fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
+dir_out_results         = "/Users/main/Documents/Dropbox/Research/Tax_prog_fed_state_local/!main_local/data/property_taxes/";
+dir_fig                 = "/Users/main/Documents/GitHubRepos/Property-Tax-Imputing/Figures/";
 sample = "baseline";
     
 # Prepare ACS and ASEC data
@@ -186,7 +186,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( "/Users/main/Downloads/ACS_state_owners_proptaxes_mean.pdf" )
+savefig( dir_fig * "ACS_state_owners_proptaxes_mean.pdf" )
 
 @df df_plot_proptaxes_renters groupedbar(:statename, cols(3:5),
 bar_position = :dodge,
@@ -207,7 +207,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( "/Users/main/Downloads/ACS_state_renters_proptaxes_mean.pdf" )
+savefig( dir_fig * "ACS_state_renters_proptaxes_mean.pdf" )
 
 
 # ## CODES TO INVESTIGATE SPECIFIC COUNTIES AND STATES
@@ -338,7 +338,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( "/Users/main/Downloads/ASEC_matched_state_owners_proptaxes_mean.pdf" )
+savefig( dir_fig * "ASEC_matched_state_owners_proptaxes_mean.pdf" )
 
 @df df_plot_matched_proptaxes_renters groupedbar(:statename, cols(3:5),
 bar_position = :dodge,
@@ -359,7 +359,7 @@ tick_direction = :out,
 left_margin = 0mm,
 bottom_margin = 6mm,
 grid = true)
-savefig( "/Users/main/Downloads/ASEC_matched_state_renters_proptaxes_mean.pdf" )
+savefig( dir_fig * "ASEC_matched_state_renters_proptaxes_mean.pdf" )
 
 
 

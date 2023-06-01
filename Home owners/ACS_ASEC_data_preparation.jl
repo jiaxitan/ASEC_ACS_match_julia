@@ -38,7 +38,7 @@ function prepare_data(sample::String)
 
     # Apply FHSV sample selection
     insertcols!(df_ASEC, :YEAR_reference => df_ASEC.YEAR)
-    df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample);
+    df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample); #df_ASEC_sample = ACS_ASEC_selection_sampleB(df_ASEC);
 
     # Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
     ASEC_UNITSSTR_recode!(df_ASEC_sample);
@@ -130,7 +130,7 @@ function prepare_data(sample::String)
 
     # Apply FHSV sample selection
     insertcols!(df_ACS, :YEAR_reference => df_ACS.YEAR)
-    df_ACS_sample0 = ACS_ASEC_sample_selection_FHSV(df_ACS, sample);
+    df_ACS_sample0 = ACS_ASEC_sample_selection_FHSV(df_ACS, sample); #df_ACS_sample0 = ACS_ASEC_selection_sampleB(df_ACS);
 
     # Add state info
     df_ACS_sample = innerjoin(df_ACS_sample0, df_state_info, on = :STATEFIPS);
