@@ -13,7 +13,7 @@ function txrate_owners_renters(df_owners_mean, df_renters_mean, state)
     foreground_color_legend = nothing,
     yaxis="Property tax rate",
     xlim = (9,13),
-    #ylim = (0.5,1.5),
+    ylim = (0.0,5.0),
     title = "Property tax rate - " * state)
 
     return p1

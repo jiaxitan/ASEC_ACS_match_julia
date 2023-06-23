@@ -1,0 +1,52 @@
+﻿STATEFIPS,STATEALPHANUM,STATENAME,STATEAB,STATENAME_no_inc_tax,CENSUS_REGION,CENSUS_DIVISION
+1,1,Alabama,AL,Alabama,3,6
+2,2,Alaska,AK,Alaska*,4,9
+4,3,Arizona,AZ,Arizona,4,8
+5,4,Arkansas,AR,Arkansas,3,7
+6,5,California,CA,California,4,9
+8,6,Colorado,CO,Colorado,4,8
+9,7,Connecticut,CT,Connecticut,1,1
+10,8,Delaware,DE,Delaware,3,5
+11,9,District of Columbia,DC,District of Columbia,3,5
+12,10,Florida,FL,Florida*,3,5
+13,11,Georgia,GA,Georgia,3,5
+15,12,Hawaii,HI,Hawaii,4,9
+16,13,Idaho,ID,Idaho,4,8
+17,14,Illinois,IL,Illinois,2,3
+18,15,Indiana,IN,Indiana,2,3
+19,16,Iowa,IA,Iowa,2,4
+20,17,Kansas,KS,Kansas,2,4
+21,18,Kentucky,KY,Kentucky,3,6
+22,19,Louisiana,LA,Louisiana,3,7
+23,20,Maine,ME,Maine,1,1
+24,21,Maryland,MD,Maryland,3,5
+25,22,Massachusetts,MA,Massachusetts,1,1
+26,23,Michigan,MI,Michigan,2,3
+27,24,Minnesota,MN,Minnesota,2,4
+28,25,Mississippi,MS,Mississippi,3,6
+29,26,Missouri,MO,Missouri,2,4
+30,27,Montana,MT,Montana,4,8
+31,28,Nebraska,NE,Nebraska,2,4
+32,29,Nevada,NV,Nevada*,4,8
+33,30,New Hampshire,NH,New Hampshire*,1,1
+34,31,New Jersey,NJ,New Jersey,1,2
+35,32,New Mexico,NM,New Mexico,4,8
+36,33,New York,NY,New York,1,2
+37,34,North Carolina,NC,North Carolina,3,5
+38,35,North Dakota,ND,North Dakota,2,4
+39,36,Ohio,OH,Ohio,2,3
+40,37,Oklahoma,OK,Oklahoma,3,7
+41,38,Oregon,OR,Oregon,4,9
+42,39,Pennsylvania,PA,Pennsylvania,1,2
+44,40,Rhode Island,RI,Rhode Island,1,1
+45,41,South Carolina,SC,South Carolina,3,5
+46,42,South Dakota,SD,South Dakota*,2,4
+47,43,Tennessee,TN,Tennessee*,3,6
+48,44,Texas,TX,Texas*,3,7
+49,45,Utah,UT,Utah,4,8
+50,46,Vermont,VT,Vermont,1,1
+51,47,Virginia,VA,Virginia,3,5
+53,48,Washington,WA,Washington*,4,9
+54,49,West Virginia,WV,West Virginia,3,5
+55,50,Wisconsin,WI,Wisconsin,2,3
+56,51,Wyoming,WY,Wyoming*,4,8

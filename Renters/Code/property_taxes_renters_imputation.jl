@@ -3,8 +3,8 @@ using PlotlyJS, Plots, Distributions
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/match_ASEC_ACS_0506_1011_1516.jl");
 ## This is the case when we fit property tax rate in ACS first, and then match to ASEC
-df_ASEC_owners = df_ASEC_hh_match_0506_final[df_ASEC_hh_match_0506_final.ownershp .== 10, :];
-df_ASEC_renters = df_ASEC_hh_match_0506_final[df_ASEC_hh_match_0506_final.ownershp .!= 10, :];
+df_ASEC_owners = df_ASEC_hh_match_1516_final[df_ASEC_hh_match_1516_final.ownershp .== 10, :];
+df_ASEC_renters = df_ASEC_hh_match_1516_final[df_ASEC_hh_match_1516_final.ownershp .!= 10, :];
 
 select!(df_ASEC_owners, Not(:valueh))
 select!(df_ASEC_owners, Not(:proptx99_recode))
@@ -87,11 +87,11 @@ proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ASEC Property Ta
 # proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state_avg rent to price/")
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/txrate_owners_renters.jl");
-txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate fe regression ASEC/")
+txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate fe regression ASEC 1516/")
 
 # Compare home charateristics of owners and renters
-df_ACS_owners = df_ACS_hh[(in([2005,2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .== 1), :];
-df_ACS_renters = df_ACS_hh[(in([2005,2006]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .!= 1), :];
+df_ACS_owners = df_ACS_hh[(in([2010,2011]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .== 1), :];
+df_ACS_renters = df_ACS_hh[(in([2010,2011]).(df_ACS_hh.YEAR)) .&& (df_ACS_hh.ownershp .!= 1), :];
 
 df_owners_mean = engel_owners_homeCha(df_ACS_owners, 1);
 df_renters_mean = engel_renters_homeCha(df_ACS_renters, 1);
@@ -289,13 +289,19 @@ scatter!(df_renters_mean.log_grossinc_mean[df_renters_mean.statename .== "Florid
 annotate!(title = "Renters' Proptery Tax Rate (ACS, 2005/06)")
 savefig("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/" * "4 states imputed property tax rate_renters.pdf")
 
+df_ACS_owners = df_ACS_hh[(in([2015,2016]).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .== 1) .& (df_ACS_hh.txrate .< 1), :];
+df_ACS_renters = df_ACS_hh[(in([2015,2016]).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .!= 1), :];
+
+include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Home owners/inc_valueh_rentgrs_regressivity.jl");
+df_owners_mean = engel_owners_data_state(df_ACS_owners, 1);
+df_renters_mean = engel_renters_data_state(df_ACS_renters, 1);
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/proptx_owners_renters.jl");
 proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "ACS Property Tax - ", "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax NEW fe regression ACS/")
 # proptx_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax by state_avg rent to price/")
 
 include("/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Code/txrate_owners_renters.jl");
-txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate NEW fe regression ACS/")
+txrate_owners_renters_states!(df_owners_mean, df_renters_mean, "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/Renters/Property tax rate fe regression ACS 1516/")
 
 p1 = scatter(df_owners_mean.log_grossinc_mean[df_owners_mean.statename .== "California"], df_owners_mean.log_proptx_mean[df_owners_mean.statename .== "California"],
     label = "CA",
