@@ -174,7 +174,7 @@ function prepare_data(sample::String)
     df_ACS_hh.YEAR_survey = df_ACS_hh.YEAR .+ 1
 
     #Impute home value for renters from Zillow data
-    df_rentgrs = CSV.read(file_rent_paid, DataFrame);
+    df_rentgrs = CSV.read(file_rent_paid, DataFrame); # read the Zillow files
     df_valueh = CSV.read(file_home_value, DataFrame);
     df_annual_rentgrs_to_valueh = 12 .* df_rentgrs[:,2:end] ./ df_valueh[:,2:end];
     insertcols!(df_annual_rentgrs_to_valueh, 1, :statename => df_rentgrs.Column1);

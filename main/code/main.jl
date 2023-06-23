@@ -16,11 +16,11 @@ using Distributions
 dir_functions   = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/main/code/code_functions/";
 dir_data = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/main/data/";
 dir_out         = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Property-Tax-Imputing/main/results/";
-file_ASEC       = dir_data * "cps_reference_year.csv";
-file_ACS        = dir_data * "usa_reference_year.csv";
+file_ASEC       = dir_data * "cps_reference_year.csv"; # ASEC raw data: [put your own raw data file into the folder]
+file_ACS        = dir_data * "usa_reference_year.csv"; # ACS raw data: [put your own raw data file into the folder]
 file_state_info = dir_data * "states_fips_names.csv";
-file_rent_paid = dir_data * "State_Zri_AllHomesPlusMultifamily_IMPORT.csv";
-file_home_value = dir_data * "State_Zhvi_AllHomes_IMPORT.csv";
+file_rent_paid = dir_data * "State_Zri_AllHomesPlusMultifamily_IMPORT.csv"; # Zillow renters data
+file_home_value = dir_data * "State_Zhvi_AllHomes_IMPORT.csv"; # Zillow home value data
 #fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
 sample = "baseline";
     
