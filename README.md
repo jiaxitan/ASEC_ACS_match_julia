@@ -1,6 +1,6 @@
 # Property-Tax-Imputing
 
-<details><summary>Summary of Approaches</summary>
+Summary of Approaches
 Data: ACS and ASEC data
 Time: 2005/2006, 2010/2011, 2015/2016
 
@@ -24,4 +24,3 @@ where i denotes state and country. We run this regression at individual househol
 Code:
 Now all code functions are organized in the main folder.
 
-</details>
