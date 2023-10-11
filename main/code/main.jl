@@ -44,11 +44,13 @@ include(dir_functions * "ACS_RACE_recode.jl")
 include(dir_functions * "ACS_EDUC_recode.jl")
 include(dir_functions * "ACS_MARST_recode.jl")
 include(dir_functions * "ACS_PROPTX99_recode.jl")
+include(dir_functions * "ACS_proptx99_topcode_imputation.jl")
 include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
     df_ACS_hh, df_ASEC_hh = prepare_data(sample);
+    df_ACS_hh.proptx99_recode = copy(df_ACS_hh.proptx99_imputed);
 
 ## Evaluate share of topcoded home value
 #=
