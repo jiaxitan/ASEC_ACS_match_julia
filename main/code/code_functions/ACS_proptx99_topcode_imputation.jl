@@ -1,6 +1,6 @@
 
 function ACS_PROPTX99_topcode_imputation!(df)
-    df_sample = df[((df.proptx99 .== 67) .| (df.proptx99 .== 68)) .& (df.ownershp .== 1), [:valueh, :YEAR, :proptx99, :proptx99_recode, :statefips]]
+    df_sample = df[(df.proptx99 .<= 68) .& (df.ownershp .== 1), [:valueh, :YEAR, :proptx99, :proptx99_recode, :statefips]]
     df_sample.txrate = df_sample.proptx99_recode ./ df_sample.valueh
 
     df_sample.year_group .= 1
