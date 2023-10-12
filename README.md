@@ -1,7 +1,6 @@
 # Property-Tax-Imputing
 
-<details><summary>Summary of Approaches</summary>
-<p>
+Summary of Approaches
 Data: ACS and ASEC data
 Time: 2005/2006, 2010/2011, 2015/2016
 
@@ -22,6 +21,6 @@ where i denotes state and country. We run this regression at individual househol
 8. The we use the estimated coefficients and imputed home value for ACS renters to imput property taxes for renters.
 4. Given the 9 nearest neighbors, we computed the mean gross rent and mean rent. Assign these values to the ASEC household.
 
+Code:
+Now all code functions are organized in the main folder.
 
-</p>
-</details>
