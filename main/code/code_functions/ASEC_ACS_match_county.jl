@@ -9,6 +9,10 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ASEC_id => collect(1:size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_proptax_mean => -2 .* ones(size(df_ASEC,1)));  insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_proptax_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_valueh_mean  => -2 .* ones(size(df_ASEC,1)));  insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_valueh_median  => -2 .* ones(size(df_ASEC,1)));
+    insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortgage_mode => -2 .* ones(size(df_ASEC,1))); 
+    insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortgag2_mode=> -2 .* ones(size(df_ASEC,1))); 
+    insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortamt1_mean => -2 .* ones(size(df_ASEC,1))); insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortamt1_median => -2 .* ones(size(df_ASEC,1)));
+    insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortamt2_mean => -2 .* ones(size(df_ASEC,1))); insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_mortamt2_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rentgrs_mean => -2 .* ones(size(df_ASEC,1)));  insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rentgrs_median => -2 .* ones(size(df_ASEC,1)));
     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rent_mean => -2 .* ones(size(df_ASEC,1)));     insertcols!(df_ASEC, size(df_ASEC,2)+1, :ACS_rent_median => -2 .* ones(size(df_ASEC,1)));
     #=
@@ -38,6 +42,10 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
                     i_df_ASEC = findfirst(x -> (x == ASEC_obs_id), df_ASEC.ASEC_id)
                     df_ASEC[i_df_ASEC, :ACS_proptax_mean] = -1; df_ASEC[i_df_ASEC, :ACS_proptax_median] = -1;
                     df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = -1; df_ASEC[i_df_ASEC, :ACS_valueh_median]  = -1;
+                    df_ASEC[i_df_ASEC, :ACS_mortgage_mode] = -1;
+                    df_ASEC[i_df_ASEC, :ACS_mortgag2_mode] = -1;
+                    df_ASEC[i_df_ASEC, :ACS_mortamt1_mean] = -1;df_ASEC[i_df_ASEC, :ACS_mortamt1_median] = -1;
+                    df_ASEC[i_df_ASEC, :ACS_mortamt2_mean] = -1;df_ASEC[i_df_ASEC, :ACS_mortamt2_median] = -1;
                     df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = -1; df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = -1;
                     df_ASEC[i_df_ASEC, :ACS_rent_mean]    = -1; df_ASEC[i_df_ASEC, :ACS_rent_median]    = -1;
                 end
@@ -48,26 +56,26 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
         #array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  [:ownershp, :grossinc, :grossinc_potential, :size, :age, :race_recode, :educ_recode, :sex, :proptx99_recode, :valueh, :rentgrs, :rent])))
         
         array_ASEC_tmp0 = convert.(Float64, Array(select(df_ASEC_tmp, vcat([:ownershp, :ASEC_id], matching_elements))))
-        array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  vcat([:ownershp, :proptx99_recode, :valueh, :rentgrs, :rent], matching_elements))))
+        array_ACS_tmp0  = convert.(Float64, Array(select(df_ACS_tmp,  vcat([:ownershp, :proptx99_recode, :valueh, :mortgage_recode, :mortgag2_recode, :mortamt1, :mortamt2, :rentgrs, :rent], matching_elements))))
 
         for j = 1:2 # Owners and renters
             j == 1 ? array_ASEC_tmp = array_ASEC_tmp0[array_ASEC_tmp0[:,1] .== 10.0, 2:end] : array_ASEC_tmp = array_ASEC_tmp0[array_ASEC_tmp0[:,1] .!= 10.0, 2:end]
             j == 1 ? array_ACS_tmp = array_ACS_tmp0[array_ACS_tmp0[:,1] .== 1.0, 2:end] : array_ACS_tmp = array_ACS_tmp0[array_ACS_tmp0[:,1] .!= 1.0, 2:end]
 
-            if j == 1 && size(array_ACS_tmp,1) < k
+            if (j == 1) && (size(array_ACS_tmp,1) < k)
                 printstyled(df_ASEC_tmp[1, :county_name_state_county] * " has less than " * string(k) * " owners in ACS\n"; color = :red)
                 continue
             end
 
-            if j == 2 && size(array_ACS_tmp,1) < k
+            if (j == 2) && (size(array_ACS_tmp,1) < k)
                 printstyled(df_ASEC_tmp[1, :county_name_state_county] * " has less than " * string(k) * " renters in ACS\n"; color = :red)
                 continue
             end
 
             array_ASEC_tmp[:, 2:end] = array_ASEC_tmp[:, 2:end] ./transpose(ASEC_std);
-            array_ACS_tmp[:, 5:end] = array_ACS_tmp[:, 5:end] ./transpose(ACS_std);
+            array_ACS_tmp[:, 9:end] = array_ACS_tmp[:, 9:end] ./transpose(ACS_std);
 
-            array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 5:end]))
+            array_ACS_tmp_transpose = convert(Array, transpose(array_ACS_tmp[:, 9:end]))
             kdtree_county = KDTree(array_ACS_tmp_transpose)
 
             for i = 1:size(array_ASEC_tmp, 1)
@@ -77,13 +85,25 @@ function ASEC_ACS_match_county!(df_ASEC, df_ACS, k, matching_elements)
                 ASEC_obs_id = convert(Int64, array_ASEC_tmp[i, 1])
                 i_df_ASEC = findfirst(x -> (x == ASEC_obs_id), df_ASEC.ASEC_id)
                 if j == 1
-                    df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
-                    df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
+                    df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]);   df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
+                    df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]);   df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
+                    df_ASEC[i_df_ASEC, :ACS_mortgage_mode]  = mode(array_ACS_tmp[idxs, 3]); 
+                    df_ASEC[i_df_ASEC, :ACS_mortgag2_mode]  = mode(array_ACS_tmp[idxs, 4]); 
+                    if mode(array_ACS_tmp[idxs, 3]) == 1
+                        df_ASEC[i_df_ASEC, :ACS_mortamt1_mean]  = mean(array_ACS_tmp[idxs[array_ACS_tmp[idxs, 5] .> 0], 5]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs[array_ACS_tmp[idxs, 5] .> 0], 5]);
+                    else
+                        df_ASEC[i_df_ASEC, :ACS_mortamt1_mean]  = 0; df_ASEC[i_df_ASEC, :ACS_valueh_median]  = 0;
+                    end
+                    if mode(array_ACS_tmp[idxs, 4]) == 1
+                        df_ASEC[i_df_ASEC, :ACS_mortamt2_mean]  = mean(array_ACS_tmp[idxs[array_ACS_tmp[idxs, 6] .> 0], 6]); df_ASEC[i_df_ASEC, :ACS_mortamt2_median]  = median(array_ACS_tmp[idxs[array_ACS_tmp[idxs, 6] .> 0], 6]);
+                    else
+                        df_ASEC[i_df_ASEC, :ACS_mortamt2_mean]  = 0; df_ASEC[i_df_ASEC, :ACS_mortamt2_median]  = 0;
+                    end
                 else
                     df_ASEC[i_df_ASEC, :ACS_proptax_mean] = mean(array_ACS_tmp[idxs, 1]); df_ASEC[i_df_ASEC, :ACS_proptax_median] = median(array_ACS_tmp[idxs, 1]);
                     df_ASEC[i_df_ASEC, :ACS_valueh_mean]  = mean(array_ACS_tmp[idxs, 2]); df_ASEC[i_df_ASEC, :ACS_valueh_median]  = median(array_ACS_tmp[idxs, 2]);
-                    df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 3]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 3]);
-                    df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 4]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 4]);
+                    df_ASEC[i_df_ASEC, :ACS_rentgrs_mean] = mean(array_ACS_tmp[idxs, 7]); df_ASEC[i_df_ASEC, :ACS_rentgrs_median] = median(array_ACS_tmp[idxs, 7]);
+                    df_ASEC[i_df_ASEC, :ACS_rent_mean]    = mean(array_ACS_tmp[idxs, 8]); df_ASEC[i_df_ASEC, :ACS_rent_median]    = median(array_ACS_tmp[idxs, 8]);
                 end
                 #=
                 df_ASEC[i_df_ASEC, :dif_grossinc_mean] = mean(array_ACS_tmp[idxs, 1]) - df_ASEC[i_df_ASEC, :grossinc];          df_ASEC[i_df_ASEC, :dif_grossinc_median] = median(array_ACS_tmp[idxs, 1]) - df_ASEC[i_df_ASEC, :grossinc];

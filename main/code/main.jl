@@ -44,6 +44,7 @@ include(dir_functions * "ACS_RACE_recode.jl")
 include(dir_functions * "ACS_EDUC_recode.jl")
 include(dir_functions * "ACS_MARST_recode.jl")
 include(dir_functions * "ACS_PROPTX99_recode.jl")
+include(dir_functions * "ACS_MORTGAGE_recode.jl")
 include(dir_functions * "ACS_proptx99_topcode_imputation.jl")
 include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
@@ -169,9 +170,9 @@ insertcols!(df_ASEC_hh_match_1516_final, :YEAR_reference => df_ASEC_hh_match_151
 
 ## Save results
 
-df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
-df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_0506_save = select(df_ASEC_hh_match_0506_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_mortgage_mode, :ACS_mortgag2_mode, :ACS_mortamt1_mean, :ACS_mortamt1_median, :ACS_mortamt2_mean, :ACS_mortamt2_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1011_save = select(df_ASEC_hh_match_1011_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_mortgage_mode, :ACS_mortgag2_mode, :ACS_mortamt1_mean, :ACS_mortamt1_median, :ACS_mortamt2_mean, :ACS_mortamt2_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
+df_ASEC_hh_match_1516_save = select(df_ASEC_hh_match_1516_final, [:YEAR_reference, :YEAR_survey, :SERIAL, :statename, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_mortgage_mode, :ACS_mortgag2_mode, :ACS_mortamt1_mean, :ACS_mortamt1_median, :ACS_mortamt2_mean, :ACS_mortamt2_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]);
 
 sort!(df_ASEC_hh_match_0506_save, [:YEAR_reference, :SERIAL]);
 sort!(df_ASEC_hh_match_1011_save, [:YEAR_reference, :SERIAL]);

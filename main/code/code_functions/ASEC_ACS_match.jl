@@ -13,7 +13,7 @@ function ASEC_ACS_match(year, df_ASEC_county, df_ACS_county, df_ASEC_state, df_A
     df_ASEC_hh_county_unmatched = filter(r -> (r[:ACS_proptax_mean] .== -1), df_ASEC_hh_county);
     filter!(r -> (r[:ACS_proptax_mean] .!= -1), df_ASEC_hh_county);
     df_ASEC_hh_county_matched_counties = unique(df_ASEC_hh_county.county);
-    select!(df_ASEC_hh_county_unmatched, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
+    select!(df_ASEC_hh_county_unmatched, Not([:ASEC_id, :ACS_proptax_mean, :ACS_proptax_median, :ACS_valueh_mean, :ACS_valueh_median, :ACS_mortgage_mode, :ACS_mortgag2_mode, :ACS_mortamt1_mean, :ACS_mortamt1_median, :ACS_mortamt2_mean, :ACS_mortamt2_median, :ACS_rentgrs_mean, :ACS_rentgrs_median, :ACS_rent_mean, :ACS_rent_median]));
     #select!(df_ASEC_hh_county_unmatched, Not([:dif_grossinc_mean, :dif_grossinc_median, :dif_size_mean, :dif_size_median, :dif_age_mean, :dif_age_median, :dif_unitsstr_mean, :dif_unitsstr_median, :dif_race_mean, :dif_race_median, :dif_educ_mean, :dif_educ_median, :dif_sex_mean, :dif_sex_median]));
     append!(df_ASEC_hh_state, df_ASEC_hh_county_unmatched);
     append!(df_ACS_hh_state, df_ACS_hh_county[.!in(df_ASEC_hh_county_matched_counties).(df_ACS_hh_county.county),:]);

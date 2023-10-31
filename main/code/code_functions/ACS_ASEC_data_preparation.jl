@@ -155,6 +155,8 @@ function prepare_data(sample::String)
     ACS_COUNTY_2005_onwards_recode!(df_ACS_sample);
     ACS_METRO_recode!(df_ACS_sample);
     ACS_PROPTX99_recode!(df_ACS_sample);
+    ACS_MORTGAGE_recode!(df_ACS_sample);
+    ACS_MORTGAG2_recode!(df_ACS_sample);
 
     # Drop observations with UNITSSTR_recode == 99 (Boat, tent, van, other -> does not exist in ASEC)
     filter!(r -> (r[:UNITSSTR_recode] .< 99), df_ACS_sample);
@@ -166,7 +168,7 @@ function prepare_data(sample::String)
     ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
     df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, 
     :QVALUEH=>first=>:qvalueh, :STATEFIPS=>first=>:statefips,:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99=>first=>:proptx99, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh,
-    :ROOMS=>first=>:rooms, :MOVEDIN=>first=>:movedin);
+    :ROOMS=>first=>:rooms, :MOVEDIN=>first=>:movedin, :MORTGAGE_recode=>first=>:mortgage_recode, :MORTGAG2_recode=>first=>:mortgag2_recode, :MORTAMT1=>first=>:mortamt1, :MORTAMT2=>first=>:mortamt2);
     df_ACS_hh = ACS_PROPTX99_topcode_imputation!(df_ACS_hh);
 
     insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
