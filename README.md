@@ -16,8 +16,8 @@ Renters:
 5. Use the Zillow price-rent ratios by state to estimate home values for each ACS renter given the imputed rent paid (gross rent). 
 6. For each ACS home owner, compute the property tax rate as the ratio of property tax paid over home value.
 7. At the state and county level (where possible) estimate the property tax rate paid given the ACS household income level by fitting the function:
-![equation](https://latex.codecogs.com/svg.image?\tau_i(y)&space;=&space;\alpha_{0,i}&space;&plus;&space;\alpha_{1,i}\log(y)&space;&plus;&space;\alpha_{2,i}\log(y)^2&space;)
-where i denotes state and country. We run this regression at individual household level.
+![equation](https://latex.codecogs.com/svg.image?\tau_i(y)&space;=&space;\alpha_{0,c,s}&space;&plus;&space;\alpha_{1,s}\log(y)&space;&plus;&space;\alpha_{2,s}\log(y)^2&space;)
+where s denotes the state and c denotes the country. We run this regression at individual household level.
 8. The we use the estimated coefficients and imputed home value for ACS renters to imput property taxes for renters.
 4. Given the 9 nearest neighbors, we computed the mean gross rent and mean rent. Assign these values to the ASEC household.
 
