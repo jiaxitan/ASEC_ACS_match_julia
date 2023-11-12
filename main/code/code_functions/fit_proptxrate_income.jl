@@ -40,6 +40,8 @@ function fit_proptxrate_income!()
     end
 end
 
+# Below are archived versions
+
 function fit_proptxrate_income_ASEC!()
     years = [[2005,2006], [2010,2011], [2015,2016]]
     insertcols!(df_ASEC_hh, :txrate => -1.0);

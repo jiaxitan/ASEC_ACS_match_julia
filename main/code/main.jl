@@ -28,7 +28,7 @@ sample = "baseline";
 # Potential income regressions are muted for speed, since we are not using potential income for now
 include(dir_functions * "ACS_ASEC_data_preparation.jl");
 #include(dir_functions * "ACS_ASEC_selection_sampleB.jl")
-include(dir_functions * "ACS_ASEC_sample_selection_FHSV.jl")
+#include(dir_functions * "ACS_ASEC_sample_selection_FHSV.jl")
 include(dir_functions * "ACS_ASEC_inc_earned_person.jl")
 
 include(dir_functions * "ASEC_UNITSSTR_recode.jl")
@@ -178,6 +178,11 @@ sort!(df_ASEC_hh_match_0506_save, [:YEAR_reference, :SERIAL]);
 sort!(df_ASEC_hh_match_1011_save, [:YEAR_reference, :SERIAL]);
 sort!(df_ASEC_hh_match_1516_save, [:YEAR_reference, :SERIAL]);
 
+CSV.write(dir_out * "All_topcode_imputation_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
+CSV.write(dir_out * "All_topcode_imputation_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
+CSV.write(dir_out * "All_topcode_imputation_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
+
+#=
 if sample == "baseline"
     CSV.write(dir_out * "baseline_topcode_imputation_ASEC_ACS_hh_match_0506.csv", df_ASEC_hh_match_0506_save);
     CSV.write(dir_out * "baseline_topcode_imputation_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
@@ -187,6 +192,7 @@ elseif sample == "full"
     CSV.write(dir_out * "full_topcode_imputation_ASEC_ACS_hh_match_1011.csv", df_ASEC_hh_match_1011_save);
     CSV.write(dir_out * "full_topcode_imputation_ASEC_ACS_hh_match_1516.csv", df_ASEC_hh_match_1516_save);
 end
+=#
 #=
 ## Density plot for match quality on each matching variable, for the original matching set with 7 variables
 

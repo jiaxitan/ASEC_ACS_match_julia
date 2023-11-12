@@ -38,20 +38,20 @@ function prepare_data(sample::String)
 
     # Apply FHSV sample selection
     insertcols!(df_ASEC, :YEAR_reference => df_ASEC.YEAR)
-    df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample);
+    #df_ASEC_sample = ACS_ASEC_sample_selection_FHSV(df_ASEC, sample);
 
     # Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
-    ASEC_UNITSSTR_recode!(df_ASEC_sample);
-    ASEC_EDUC_recode!(df_ASEC_sample);
-    ASEC_RACE_recode!(df_ASEC_sample);
-    ASEC_MARST_recode!(df_ASEC_sample);
-    ASEC_COUNTY_recode!(df_ASEC_sample);
-    ASEC_METRO_recode!(df_ASEC_sample);
+    ASEC_UNITSSTR_recode!(df_ASEC);
+    ASEC_EDUC_recode!(df_ASEC);
+    ASEC_RACE_recode!(df_ASEC);
+    ASEC_MARST_recode!(df_ASEC);
+    ASEC_COUNTY_recode!(df_ASEC);
+    ASEC_METRO_recode!(df_ASEC);
 
     # Generate personal earned income (to compute number of earners in each household)
-    ACS_ASEC_inc_earned_person!(df_ASEC_sample)
+    ACS_ASEC_inc_earned_person!(df_ASEC)
     # Collapse at household level
-    ASEC_gdf_hh = groupby(df_ASEC_sample, [:YEAR, :SERIAL]);
+    ASEC_gdf_hh = groupby(df_ASEC, [:YEAR, :SERIAL]);
     df_ASEC_hh = combine(ASEC_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :IND=>first=>:ind, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :MARST_recode=>first=>:marst_recode, :OCC=>first=>:occ, :EDUC_recode=>first=>:educ_recode, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY=>first=>:county, :COUNTY_name_state_county=>first=>:county_name_state_county, :METFIPS=>first=>:metfips, :INDIVIDCC=>first=>:individcc, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :PROPTAX=>first=>:proptax, :INCWAGE=>sum=>:incwage, :INCBUS=>sum=>:incbus, :INCFARM=>sum=>:incfarm, :INCINT=>sum=>:incint, :INCDIVID=>sum=>:incdivid, :INCRENT=>sum=>:incrent, :INCASIST=>sum=>:incasist);
     insertcols!(df_ASEC_hh, 3, :grossinc => df_ASEC_hh.incwage + df_ASEC_hh.incbus + df_ASEC_hh.incfarm + df_ASEC_hh.incint + df_ASEC_hh.incdivid + df_ASEC_hh.incrent + df_ASEC_hh.incasist);
     filter!(r -> (r[:grossinc] .> 0), df_ASEC_hh); # Innocent
@@ -130,14 +130,14 @@ function prepare_data(sample::String)
 
     # Apply FHSV sample selection
     insertcols!(df_ACS, :YEAR_reference => df_ACS.YEAR)
-    df_ACS_sample0 = ACS_ASEC_sample_selection_FHSV(df_ACS, sample);
+    #df_ACS_sample0 = ACS_ASEC_sample_selection_FHSV(df_ACS, sample);
 
     # Add state info
-    df_ACS_sample = innerjoin(df_ACS_sample0, df_state_info, on = :STATEFIPS);
+    df_ACS = innerjoin(df_ACS, df_state_info, on = :STATEFIPS);
 
     # Construct county from PUMA
-    sort!(df_ACS_sample, [:YEAR, :STATEFIPS, :PUMA]);
-    ACS_match_PUMA_county!(df_ACS_sample, df_state_info);
+    sort!(df_ACS, [:YEAR, :STATEFIPS, :PUMA]);
+    ACS_match_PUMA_county!(df_ACS, df_state_info);
 
     #=
     # Compare the share of missing counties after PUMA-county matching
@@ -148,24 +148,24 @@ function prepare_data(sample::String)
     =#
 
     # Recode UNITSSTR, EDUC, RACE, MARST, COUNTY Names
-    ACS_UNITSSTR_recode!(df_ACS_sample);
-    ACS_EDUC_recode!(df_ACS_sample);
-    ACS_RACE_recode!(df_ACS_sample);
-    ACS_MARST_recode!(df_ACS_sample);
-    ACS_COUNTY_2005_onwards_recode!(df_ACS_sample);
-    ACS_METRO_recode!(df_ACS_sample);
-    ACS_PROPTX99_recode!(df_ACS_sample);
-    ACS_MORTGAGE_recode!(df_ACS_sample);
-    ACS_MORTGAG2_recode!(df_ACS_sample);
+    ACS_UNITSSTR_recode!(df_ACS);
+    ACS_EDUC_recode!(df_ACS);
+    ACS_RACE_recode!(df_ACS);
+    ACS_MARST_recode!(df_ACS);
+    ACS_COUNTY_2005_onwards_recode!(df_ACS);
+    ACS_METRO_recode!(df_ACS);
+    ACS_PROPTX99_recode!(df_ACS);
+    ACS_MORTGAGE_recode!(df_ACS);
+    ACS_MORTGAG2_recode!(df_ACS);
 
     # Drop observations with UNITSSTR_recode == 99 (Boat, tent, van, other -> does not exist in ASEC)
-    filter!(r -> (r[:UNITSSTR_recode] .< 99), df_ACS_sample);
+    filter!(r -> (r[:UNITSSTR_recode] .< 99), df_ACS);
 
     # Generate personal earned income (to compute number of earners in each household)
-    ACS_ASEC_inc_earned_person!(df_ACS_sample);
+    ACS_ASEC_inc_earned_person!(df_ACS);
 
     # Collapse at household level
-    ACS_gdf_hh = groupby(df_ACS_sample, [:YEAR, :SERIAL]);
+    ACS_gdf_hh = groupby(df_ACS, [:YEAR, :SERIAL]);
     df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, 
     :QVALUEH=>first=>:qvalueh, :STATEFIPS=>first=>:statefips,:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99=>first=>:proptx99, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh,
     :ROOMS=>first=>:rooms, :MOVEDIN=>first=>:movedin, :MORTGAGE_recode=>first=>:mortgage_recode, :MORTGAG2_recode=>first=>:mortgag2_recode, :MORTAMT1=>first=>:mortamt1, :MORTAMT2=>first=>:mortamt2);
