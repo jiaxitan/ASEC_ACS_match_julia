@@ -185,8 +185,8 @@ function prepare_data()
     df_ACS_hh = leftjoin(df_ACS_hh, df_county_prratio[:,[:YEAR, :COUNTYFIPS, :price_rent_ratio_county]], on = [:YEAR_survey => :YEAR, :county => :COUNTYFIPS]);
     df_ACS_hh = leftjoin(df_ACS_hh, df_state_prratio[:, [:YEAR, :STATENAME, :price_rent_ratio_state]], on = [:statename => :STATENAME, :YEAR_survey => :YEAR]);
     df_ACS_hh.valueh = convert.(Float64, df_ACS_hh.valueh);
-    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_county]
-    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_state]
+    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= 12 .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_county]
+    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= 12 .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_state]
 
     #=
     # Potential Earnings Regression using FE package -> fast
