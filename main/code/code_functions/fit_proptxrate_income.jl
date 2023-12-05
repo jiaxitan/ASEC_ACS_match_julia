@@ -8,12 +8,11 @@ function fit_proptxrate_income!()
     insertcols!(df_ACS_hh, :txrate => -1.0);
     df_ACS_hh[df_ACS_hh.ownershp .== 1.0, :txrate] .= df_ACS_hh[df_ACS_hh.ownershp .== 1.0, :proptx99_recode] ./ df_ACS_hh[df_ACS_hh.ownershp .== 1.0, :valueh]
     #df_ACS_hh[isnan.(df_ACS_hh.txrate), :txrate] .= missing
-    df_ACS_hh[df_ACS_hh.txrate .== Inf, :txrate] .= NaN
-    df_ACS_hh[df_ACS_hh.txrate .== -Inf, :txrate] .= NaN
+    df_ACS_hh[df_ACS_hh.txrate .== Inf, :txrate] .= -1
+    df_ACS_hh[df_ACS_hh.txrate .== -Inf, :txrate] .= -1
 
     for year in years
         println(year)
-        fm = @formula(txrate ~ grossinc_log + grossinc_log^2 + fe(county));
         #df_state = DataFrame(state = String[], county = Int[],n_rent = Float64[], n_owner = Int[], txrate = Float64[])
 
         for state in unique(df_ACS_hh.statename)
@@ -21,13 +20,19 @@ function fit_proptxrate_income!()
             df_renters_tmp_state = df_ACS_hh[(in(year).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== state), :]
             df_owners_tmp_state = df_ACS_hh[(in(year).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .== 1.0) .& (df_ACS_hh.statename .== state), :]
 
+            filter!(r -> (r[:txrate] .<= 1), df_owners_tmp_state);
+            filter!(r -> (r[:proptx99_topcode] .== 0), df_owners_tmp_state)
             #nyc_counties = [36081, 36005, 36061, 36047, 36085]
             #deleteat!(df_renters_tmp_state, in(nyc_counties).(df_renters_tmp_state.county))
             #deleteat!(df_owners_tmp_state, in(nyc_counties).(df_owners_tmp_state.county))
-            regression = FixedEffectModels.reg(df_owners_tmp_state[(.!isnan.(df_owners_tmp_state.txrate)) .& (df_owners_tmp_state.txrate .< 1), :], fm, save = :fe)
-            df_renters_tmp_state = leftjoin(df_renters_tmp_state, unique(regression.fe), on = :county)
-            df_renters_tmp_state.txrate .= df_renters_tmp_state.fe_county .+ df_renters_tmp_state.grossinc_log .* regression.coef[1] .+ ((df_renters_tmp_state.grossinc_log).^2) .* regression.coef[2]
-            select!(df_renters_tmp_state, Not(:fe_county))
+            df_txrate = combine(groupby(df_owners_tmp_state, :county), :txrate => (x -> mean(x)) => :txrate, nrow => :nHH)
+            df_txrate.inrenters = in(unique(df_renters_tmp_state.county)).(df_txrate.county)
+            df_txrate[df_txrate.county .== 0, :inrenters] .= 0
+            df_txrate_not_in_renters = df_txrate[df_txrate.inrenters .== 0, :]
+            filter!(r -> ((r[:inrenters] .== 1) .| (r[:county] .== 0)), df_txrate)
+            df_txrate[df_txrate.county .== 0, :txrate] .= sum(df_txrate_not_in_renters.txrate .* df_txrate_not_in_renters.nHH)/sum(df_txrate_not_in_renters.nHH)
+
+            df_renters_tmp_state = leftjoin(df_renters_tmp_state[:, Not(:txrate)], df_txrate[:,[:county, :txrate]], on = :county)
             
             deleteat!(df_ACS_hh, (in(year).(df_ACS_hh.YEAR)) .& (df_ACS_hh.ownershp .!= 1.0) .& (df_ACS_hh.statename .== state))
             append!(df_ACS_hh, df_renters_tmp_state)

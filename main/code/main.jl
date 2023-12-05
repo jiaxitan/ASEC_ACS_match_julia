@@ -22,7 +22,7 @@ file_state_info = dir_data * "states_fips_names.csv";
 file_rent_paid = dir_data * "State_Zri_AllHomesPlusMultifamily_IMPORT.csv"; # Zillow renters data
 file_home_value = dir_data * "State_Zhvi_AllHomes_IMPORT.csv"; # Zillow home value data
 #fig_dir_out     = "/Users/jiaxitan/UMN/Fed RA/Heathcote/Property Tax Est/Match Quality/";
-sample = "baseline";
+#sample = "baseline";
     
 # Prepare ACS and ASEC data
 # Potential income regressions are muted for speed, since we are not using potential income for now
@@ -50,7 +50,8 @@ include(dir_functions * "ACS_COUNTY_2005_onwards_recode.jl")
 include(dir_functions * "ACS_match_PUMA_county.jl")
     #include("/Users/main/Documents/GitHubRepos/julia_utils/ACS_COUNTY_2005_2006_recode.jl")
 
-    df_ACS_hh, df_ASEC_hh = prepare_data(sample);
+    df_ACS_hh, df_ASEC_hh = prepare_data();
+    df_ACS_hh.proptx99_topcode = (df_ACS_hh.proptx99 .== 69)
     df_ACS_hh.proptx99_recode = copy(df_ACS_hh.proptx99_imputed);
 
 ## Evaluate share of topcoded home value

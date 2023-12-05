@@ -1,0 +1,664 @@
+STATENAME,YEAR,price_rent_ratio_state
+Alabama,2005,8.59
+Alabama,2006,8.86
+Alabama,2007,9.85
+Alabama,2008,10.7
+Alabama,2009,10.91
+Alabama,2010,10.38
+Alabama,2011,9.8
+Alabama,2012,9.69
+Alabama,2013,9.8
+Alabama,2014,9.85
+Alabama,2015,9.72
+Alabama,2016,9.92
+Alabama,2017,10.11
+Alaska,2005,10.87
+Alaska,2006,11.22
+Alaska,2007,12.46
+Alaska,2008,13.55
+Alaska,2009,13.81
+Alaska,2010,13.17
+Alaska,2011,12.1
+Alaska,2012,11.99
+Alaska,2013,11.88
+Alaska,2014,12.05
+Alaska,2015,11.64
+Alaska,2016,11.81
+Alaska,2017,12.18
+Arizona,2005,8.84
+Arizona,2006,9.13
+Arizona,2007,10.14
+Arizona,2008,11.02
+Arizona,2009,11.23
+Arizona,2010,10.66
+Arizona,2011,10.23
+Arizona,2012,11.08
+Arizona,2013,12.69
+Arizona,2014,13.38
+Arizona,2015,13.44
+Arizona,2016,13.71
+Arizona,2017,14.21
+Arkansas,2005,8.56
+Arkansas,2006,8.84
+Arkansas,2007,9.82
+Arkansas,2008,10.67
+Arkansas,2009,10.88
+Arkansas,2010,10.35
+Arkansas,2011,9.85
+Arkansas,2012,9.46
+Arkansas,2013,9.22
+Arkansas,2014,9.63
+Arkansas,2015,9.56
+Arkansas,2016,9.73
+Arkansas,2017,10.28
+California,2005,11.91
+California,2006,12.3
+California,2007,13.66
+California,2008,14.85
+California,2009,15.14
+California,2010,14.39
+California,2011,13.35
+California,2012,13.38
+California,2013,15.35
+California,2014,16.8
+California,2015,16.66
+California,2016,16.78
+California,2017,17.09
+Colorado,2005,11.14
+Colorado,2006,11.49
+Colorado,2007,12.77
+Colorado,2008,13.88
+Colorado,2009,14.15
+Colorado,2010,13.44
+Colorado,2011,12.16
+Colorado,2012,12.18
+Colorado,2013,12.51
+Colorado,2014,12.92
+Colorado,2015,13.15
+Colorado,2016,13.83
+Colorado,2017,14.69
+Connecticut,2005,10.69
+Connecticut,2006,11.03
+Connecticut,2007,12.25
+Connecticut,2008,13.32
+Connecticut,2009,13.58
+Connecticut,2010,12.94
+Connecticut,2011,12.12
+Connecticut,2012,11.77
+Connecticut,2013,11.79
+Connecticut,2014,11.8
+Connecticut,2015,11.3
+Connecticut,2016,11.28
+Connecticut,2017,11.6
+Delaware,2005,10.42
+Delaware,2006,10.75
+Delaware,2007,11.94
+Delaware,2008,12.98
+Delaware,2009,13.23
+Delaware,2010,12.59
+Delaware,2011,12.04
+Delaware,2012,11.63
+Delaware,2013,11.79
+Delaware,2014,12.21
+Delaware,2015,11.95
+Delaware,2016,12.34
+Delaware,2017,12.64
+District of Columbia,2005,11.55
+District of Columbia,2006,11.92
+District of Columbia,2007,13.24
+District of Columbia,2008,14.4
+District of Columbia,2009,14.68
+District of Columbia,2010,13.95
+District of Columbia,2011,12.93
+District of Columbia,2012,13.26
+District of Columbia,2013,14.35
+District of Columbia,2014,15.64
+District of Columbia,2015,15.97
+District of Columbia,2016,16.33
+District of Columbia,2017,16.83
+Florida,2005,7.71
+Florida,2006,7.96
+Florida,2007,8.85
+Florida,2008,9.61
+Florida,2009,9.8
+Florida,2010,9.31
+Florida,2011,8.68
+Florida,2012,8.68
+Florida,2013,9.2
+Florida,2014,9.79
+Florida,2015,10.12
+Florida,2016,10.58
+Florida,2017,11.08
+Georgia,2005,8.03
+Georgia,2006,8.29
+Georgia,2007,9.2
+Georgia,2008,10.01
+Georgia,2009,10.2
+Georgia,2010,9.7
+Georgia,2011,9.04
+Georgia,2012,8.9
+Georgia,2013,9.15
+Georgia,2014,9.81
+Georgia,2015,10
+Georgia,2016,10.22
+Georgia,2017,10.45
+Hawaii,2005,15.17
+Hawaii,2006,15.65
+Hawaii,2007,17.39
+Hawaii,2008,18.9
+Hawaii,2009,19.27
+Hawaii,2010,18.4
+Hawaii,2011,17.85
+Hawaii,2012,18.4
+Hawaii,2013,18.6
+Hawaii,2014,20.36
+Hawaii,2015,18.91
+Hawaii,2016,19.27
+Hawaii,2017,19.88
+Idaho,2005,10.32
+Idaho,2006,10.65
+Idaho,2007,11.83
+Idaho,2008,12.86
+Idaho,2009,13.11
+Idaho,2010,12.5
+Idaho,2011,11.82
+Idaho,2012,11.8
+Idaho,2013,12.62
+Idaho,2014,12.69
+Idaho,2015,12.46
+Idaho,2016,12.56
+Idaho,2017,12.93
+Illinois,2005,7.99
+Illinois,2006,8.25
+Illinois,2007,9.17
+Illinois,2008,9.96
+Illinois,2009,10.16
+Illinois,2010,9.65
+Illinois,2011,9.04
+Illinois,2012,8.72
+Illinois,2013,8.82
+Illinois,2014,9.1
+Illinois,2015,9.12
+Illinois,2016,9.36
+Illinois,2017,9.65
+Indiana,2005,7.41
+Indiana,2006,7.65
+Indiana,2007,8.5
+Indiana,2008,9.23
+Indiana,2009,9.42
+Indiana,2010,8.96
+Indiana,2011,8.82
+Indiana,2012,9.06
+Indiana,2013,9.58
+Indiana,2014,9.13
+Indiana,2015,8.87
+Indiana,2016,8.96
+Indiana,2017,9.1
+Iowa,2005,8.04
+Iowa,2006,8.3
+Iowa,2007,9.22
+Iowa,2008,10.03
+Iowa,2009,10.22
+Iowa,2010,9.74
+Iowa,2011,9.5
+Iowa,2012,9.74
+Iowa,2013,9.75
+Iowa,2014,9.74
+Iowa,2015,9.58
+Iowa,2016,9.7
+Iowa,2017,9.96
+Kansas,2005,9.48
+Kansas,2006,9.78
+Kansas,2007,10.87
+Kansas,2008,11.81
+Kansas,2009,12.04
+Kansas,2010,11.45
+Kansas,2011,10.27
+Kansas,2012,9.86
+Kansas,2013,10.13
+Kansas,2014,9.74
+Kansas,2015,9.47
+Kansas,2016,9.96
+Kansas,2017,10.13
+Kentucky,2005,8.56
+Kentucky,2006,8.84
+Kentucky,2007,9.82
+Kentucky,2008,10.67
+Kentucky,2009,10.88
+Kentucky,2010,10.35
+Kentucky,2011,9.79
+Kentucky,2012,9.81
+Kentucky,2013,9.85
+Kentucky,2014,10
+Kentucky,2015,9.83
+Kentucky,2016,10.12
+Kentucky,2017,10.52
+Louisiana,2005,7.7972
+Louisiana,2006,8.049
+Louisiana,2007,8.9402
+Louisiana,2008,9.7188
+Louisiana,2009,9.9084
+Louisiana,2010,9.4466
+Louisiana,2011,9.014
+Louisiana,2012,9.4746
+Louisiana,2013,10.4322
+Louisiana,2014,10.0196
+Louisiana,2015,9.4324
+Louisiana,2016,8.6686
+Louisiana,2017,9.7316
+Maine,2005,11.03
+Maine,2006,11.39
+Maine,2007,12.65
+Maine,2008,13.75
+Maine,2009,14.02
+Maine,2010,13.36
+Maine,2011,13.02
+Maine,2012,12.93
+Maine,2013,11.76
+Maine,2014,11.55
+Maine,2015,10.84
+Maine,2016,10.62
+Maine,2017,11.03
+Maryland,2005,10.24
+Maryland,2006,10.57
+Maryland,2007,11.74
+Maryland,2008,12.76
+Maryland,2009,13.01
+Maryland,2010,12.37
+Maryland,2011,11.45
+Maryland,2012,11.23
+Maryland,2013,11.61
+Maryland,2014,12.04
+Maryland,2015,11.93
+Maryland,2016,12.3
+Maryland,2017,12.67
+Massachusetts,2005,12.11
+Massachusetts,2006,12.5
+Massachusetts,2007,13.88
+Massachusetts,2008,15.09
+Massachusetts,2009,15.39
+Massachusetts,2010,14.66
+Massachusetts,2011,13.93
+Massachusetts,2012,13.52
+Massachusetts,2013,14.02
+Massachusetts,2014,14.4
+Massachusetts,2015,13.7
+Massachusetts,2016,13.85
+Massachusetts,2017,14.37
+Michigan,2005,6.13
+Michigan,2006,6.33
+Michigan,2007,7.03
+Michigan,2008,7.64
+Michigan,2009,7.79
+Michigan,2010,7.41
+Michigan,2011,7.34
+Michigan,2012,8.06
+Michigan,2013,8.71
+Michigan,2014,9.01
+Michigan,2015,9.04
+Michigan,2016,9.4
+Michigan,2017,9.8
+Minnesota,2005,9.32
+Minnesota,2006,9.62
+Minnesota,2007,10.69
+Minnesota,2008,11.62
+Minnesota,2009,11.85
+Minnesota,2010,11.24
+Minnesota,2011,9.94
+Minnesota,2012,9.94
+Minnesota,2013,10.34
+Minnesota,2014,10.66
+Minnesota,2015,10.85
+Minnesota,2016,11.43
+Minnesota,2017,11.81
+Mississippi,2005,8.49
+Mississippi,2006,8.77
+Mississippi,2007,9.74
+Mississippi,2008,10.59
+Mississippi,2009,10.79
+Mississippi,2010,10.25
+Mississippi,2011,9.68
+Mississippi,2012,9.97
+Mississippi,2013,10.52
+Mississippi,2014,9.65
+Mississippi,2015,8.91
+Mississippi,2016,8.62
+Mississippi,2017,8.82
+Missouri,2005,9.55
+Missouri,2006,9.86
+Missouri,2007,10.95
+Missouri,2008,11.91
+Missouri,2009,12.14
+Missouri,2010,11.55
+Missouri,2011,10.57
+Missouri,2012,10.37
+Missouri,2013,10.6
+Missouri,2014,10.21
+Missouri,2015,10.04
+Missouri,2016,10.42
+Missouri,2017,10.71
+Montana,2005,12.59
+Montana,2006,12.99
+Montana,2007,14.43
+Montana,2008,15.69
+Montana,2009,16
+Montana,2010,15.24
+Montana,2011,14.58
+Montana,2012,16.04
+Montana,2013,15.47
+Montana,2014,14.61
+Montana,2015,13.53
+Montana,2016,13.28
+Montana,2017,13.49
+Nebraska,2005,8.03
+Nebraska,2006,8.29
+Nebraska,2007,9.2
+Nebraska,2008,10.01
+Nebraska,2009,10.2
+Nebraska,2010,9.69
+Nebraska,2011,9.13
+Nebraska,2012,9.11
+Nebraska,2013,8.93
+Nebraska,2014,9.23
+Nebraska,2015,9.1
+Nebraska,2016,9.38
+Nebraska,2017,9.87
+Nevada,2005,8.07
+Nevada,2006,8.33
+Nevada,2007,9.25
+Nevada,2008,10.06
+Nevada,2009,10.25
+Nevada,2010,9.74
+Nevada,2011,8.83
+Nevada,2012,9.04
+Nevada,2013,11.05
+Nevada,2014,12.8
+Nevada,2015,13.56
+Nevada,2016,14.16
+Nevada,2017,14.86
+New Hampshire,2005,9.89
+New Hampshire,2006,10.21
+New Hampshire,2007,11.34
+New Hampshire,2008,12.33
+New Hampshire,2009,12.57
+New Hampshire,2010,11.94
+New Hampshire,2011,11.31
+New Hampshire,2012,10.95
+New Hampshire,2013,10.94
+New Hampshire,2014,11.57
+New Hampshire,2015,11.28
+New Hampshire,2016,11.47
+New Hampshire,2017,11.8
+New Jersey,2005,10.93
+New Jersey,2006,11.28
+New Jersey,2007,12.54
+New Jersey,2008,13.63
+New Jersey,2009,13.89
+New Jersey,2010,13.2
+New Jersey,2011,12.34
+New Jersey,2012,11.62
+New Jersey,2013,11.52
+New Jersey,2014,12.01
+New Jersey,2015,11.67
+New Jersey,2016,11.76
+New Jersey,2017,12.02
+New Mexico,2005,11.36
+New Mexico,2006,11.73
+New Mexico,2007,13.03
+New Mexico,2008,14.16
+New Mexico,2009,14.44
+New Mexico,2010,13.76
+New Mexico,2011,12.95
+New Mexico,2012,12.95
+New Mexico,2013,13.29
+New Mexico,2014,12.65
+New Mexico,2015,11.99
+New Mexico,2016,11.92
+New Mexico,2017,12.25
+New York,2005,10.13
+New York,2006,10.45
+New York,2007,11.61
+New York,2008,12.62
+New York,2009,12.87
+New York,2010,12.2
+New York,2011,10.85
+New York,2012,10.51
+New York,2013,10.47
+New York,2014,10.78
+New York,2015,10.17
+New York,2016,9.83
+New York,2017,10.59
+North Carolina,2005,9.67
+North Carolina,2006,9.98
+North Carolina,2007,11.09
+North Carolina,2008,12.05
+North Carolina,2009,12.29
+North Carolina,2010,11.68
+North Carolina,2011,10.93
+North Carolina,2012,10.7
+North Carolina,2013,10.73
+North Carolina,2014,10.8
+North Carolina,2015,10.76
+North Carolina,2016,10.96
+North Carolina,2017,11.3
+North Dakota,2005,9.08
+North Dakota,2006,9.37
+North Dakota,2007,10.41
+North Dakota,2008,11.32
+North Dakota,2009,11.54
+North Dakota,2010,10.99
+North Dakota,2011,12.09
+North Dakota,2012,12.68
+North Dakota,2013,12.19
+North Dakota,2014,12.8
+North Dakota,2015,11.86
+North Dakota,2016,12.9
+North Dakota,2017,12.83
+Ohio,2005,7.76
+Ohio,2006,8.01
+Ohio,2007,8.89
+Ohio,2008,9.67
+Ohio,2009,9.86
+Ohio,2010,9.37
+Ohio,2011,8.89
+Ohio,2012,8.71
+Ohio,2013,8.67
+Ohio,2014,8.9
+Ohio,2015,8.85
+Ohio,2016,9.02
+Ohio,2017,9.47
+Oklahoma,2005,7.37
+Oklahoma,2006,7.6
+Oklahoma,2007,8.45
+Oklahoma,2008,9.18
+Oklahoma,2009,9.36
+Oklahoma,2010,8.94
+Oklahoma,2011,8.61
+Oklahoma,2012,8.88
+Oklahoma,2013,8.83
+Oklahoma,2014,9.02
+Oklahoma,2015,9.02
+Oklahoma,2016,9.32
+Oklahoma,2017,9.85
+Oregon,2005,12.56
+Oregon,2006,12.96
+Oregon,2007,14.4
+Oregon,2008,15.65
+Oregon,2009,15.96
+Oregon,2010,15.18
+Oregon,2011,13.68
+Oregon,2012,13.27
+Oregon,2013,13.9
+Oregon,2014,14.51
+Oregon,2015,14.24
+Oregon,2016,14.63
+Oregon,2017,15.29
+Pennsylvania,2005,8.81
+Pennsylvania,2006,9.09
+Pennsylvania,2007,10.1
+Pennsylvania,2008,10.98
+Pennsylvania,2009,11.19
+Pennsylvania,2010,10.66
+Pennsylvania,2011,10.23
+Pennsylvania,2012,9.97
+Pennsylvania,2013,9.81
+Pennsylvania,2014,10.2
+Pennsylvania,2015,10.13
+Pennsylvania,2016,10.34
+Pennsylvania,2017,10.75
+Rhode Island,2005,9.87
+Rhode Island,2006,10.19
+Rhode Island,2007,11.32
+Rhode Island,2008,12.31
+Rhode Island,2009,12.55
+Rhode Island,2010,12.12
+Rhode Island,2011,12.49
+Rhode Island,2012,11.64
+Rhode Island,2013,11.89
+Rhode Island,2014,12.25
+Rhode Island,2015,11.91
+Rhode Island,2016,12.1
+Rhode Island,2017,12.5
+South Carolina,2005,8.96
+South Carolina,2006,9.25
+South Carolina,2007,10.27
+South Carolina,2008,11.17
+South Carolina,2009,11.38
+South Carolina,2010,10.81
+South Carolina,2011,10.17
+South Carolina,2012,9.74
+South Carolina,2013,9.52
+South Carolina,2014,9.76
+South Carolina,2015,9.69
+South Carolina,2016,9.81
+South Carolina,2017,10.05
+South Dakota,2005,8.99
+South Dakota,2006,9.28
+South Dakota,2007,10.31
+South Dakota,2008,11.21
+South Dakota,2009,11.43
+South Dakota,2010,10.89
+South Dakota,2011,10.94
+South Dakota,2012,11.83
+South Dakota,2013,10.07
+South Dakota,2014,11.29
+South Dakota,2015,11.42
+South Dakota,2016,11.37
+South Dakota,2017,11.5
+Tennessee,2005,8.28
+Tennessee,2006,8.55
+Tennessee,2007,9.5
+Tennessee,2008,10.32
+Tennessee,2009,10.52
+Tennessee,2010,10.02
+Tennessee,2011,9.62
+Tennessee,2012,9.39
+Tennessee,2013,9.39
+Tennessee,2014,9.64
+Tennessee,2015,9.65
+Tennessee,2016,9.9
+Tennessee,2017,10.27
+Texas,2005,7.6
+Texas,2006,7.84
+Texas,2007,8.71
+Texas,2008,9.47
+Texas,2009,9.65
+Texas,2010,9.19
+Texas,2011,8.91
+Texas,2012,8.98
+Texas,2013,8.96
+Texas,2014,8.77
+Texas,2015,8.85
+Texas,2016,9.28
+Texas,2017,9.71
+Utah,2005,11.74
+Utah,2006,12.12
+Utah,2007,13.46
+Utah,2008,14.63
+Utah,2009,14.91
+Utah,2010,14.21
+Utah,2011,13.71
+Utah,2012,13.65
+Utah,2013,13.76
+Utah,2014,13.54
+Utah,2015,13.19
+Utah,2016,13.57
+Utah,2017,14.07
+Vermont,2005,10.23222222
+Vermont,2006,10.56222222
+Vermont,2007,11.73111111
+Vermont,2008,12.75333333
+Vermont,2009,13.00111111
+Vermont,2010,12.39222222
+Vermont,2011,12.1
+Vermont,2012,12.16222222
+Vermont,2013,12
+Vermont,2014,13.82888889
+Vermont,2015,11.08111111
+Vermont,2016,10.56888889
+Vermont,2017,11.01111111
+Virginia,2005,10.85
+Virginia,2006,11.2
+Virginia,2007,12.44
+Virginia,2008,13.52
+Virginia,2009,13.78
+Virginia,2010,13.12
+Virginia,2011,12.29
+Virginia,2012,12.05
+Virginia,2013,12.18
+Virginia,2014,12.55
+Virginia,2015,12.54
+Virginia,2016,12.92
+Virginia,2017,13.27
+Washington,2005,12.41
+Washington,2006,12.81
+Washington,2007,14.22
+Washington,2008,15.46
+Washington,2009,15.76
+Washington,2010,14.97
+Washington,2011,13.42
+Washington,2012,13.24
+Washington,2013,13.75
+Washington,2014,14.19
+Washington,2015,14.35
+Washington,2016,14.71
+Washington,2017,15.32
+West Virginia,2005,11.13
+West Virginia,2006,11.49
+West Virginia,2007,12.76
+West Virginia,2008,13.87
+West Virginia,2009,14.14
+West Virginia,2010,13.4
+West Virginia,2011,8.39
+West Virginia,2012,8.18
+West Virginia,2013,8.37
+West Virginia,2014,8.89
+West Virginia,2015,8.11
+West Virginia,2016,8.95
+West Virginia,2017,9.34
+Wisconsin,2005,11.71
+Wisconsin,2006,12.09
+Wisconsin,2007,13.43
+Wisconsin,2008,14.6
+Wisconsin,2009,14.88
+Wisconsin,2010,14.17
+Wisconsin,2011,11.73
+Wisconsin,2012,10.44
+Wisconsin,2013,10.77
+Wisconsin,2014,11.24
+Wisconsin,2015,10.93
+Wisconsin,2016,11.17
+Wisconsin,2017,11.48
+Wyoming,2005,14.62
+Wyoming,2006,15.09
+Wyoming,2007,16.76
+Wyoming,2008,18.22
+Wyoming,2009,18.57
+Wyoming,2010,17.7
+Wyoming,2011,17.37
+Wyoming,2012,13.65
+Wyoming,2013,12.78
+Wyoming,2014,12.33
+Wyoming,2015,11.57
+Wyoming,2016,12.42
+Wyoming,2017,13.36

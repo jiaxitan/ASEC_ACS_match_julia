@@ -7,7 +7,7 @@
 # For ASEC renters: get rent and gross rent paid
 # NOTE: for ACS, split potential earnings regression by years to speed up/avoid crashes
 
-function prepare_data(sample::String)
+function prepare_data()
 
     # Import state info
     df_state_info = CSV.read(file_state_info, DataFrame; types=[Int64, Int64, String, String, String, Int64, Int64]);
@@ -51,14 +51,15 @@ function prepare_data(sample::String)
     # Generate personal earned income (to compute number of earners in each household)
     ACS_ASEC_inc_earned_person!(df_ASEC)
     # Collapse at household level
+    sort!(df_ASEC, [:YEAR, :SERIAL, :RELATE]);
     ASEC_gdf_hh = groupby(df_ASEC, [:YEAR, :SERIAL]);
     df_ASEC_hh = combine(ASEC_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :IND=>first=>:ind, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :MARST_recode=>first=>:marst_recode, :OCC=>first=>:occ, :EDUC_recode=>first=>:educ_recode, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, :COUNTY=>first=>:county, :COUNTY_name_state_county=>first=>:county_name_state_county, :METFIPS=>first=>:metfips, :INDIVIDCC=>first=>:individcc, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :PROPTAX=>first=>:proptax, :INCWAGE=>sum=>:incwage, :INCBUS=>sum=>:incbus, :INCFARM=>sum=>:incfarm, :INCINT=>sum=>:incint, :INCDIVID=>sum=>:incdivid, :INCRENT=>sum=>:incrent, :INCASIST=>sum=>:incasist);
     insertcols!(df_ASEC_hh, 3, :grossinc => df_ASEC_hh.incwage + df_ASEC_hh.incbus + df_ASEC_hh.incfarm + df_ASEC_hh.incint + df_ASEC_hh.incdivid + df_ASEC_hh.incrent + df_ASEC_hh.incasist);
-    filter!(r -> (r[:grossinc] .> 0), df_ASEC_hh); # Innocent
-    df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
+    #filter!(r -> (r[:grossinc] .> 0), df_ASEC_hh); # Innocent
+    #df_ASEC_hh[:, :grossinc_log] = log.(df_ASEC_hh[:, :grossinc]);
     sort!(df_ASEC_hh, :grossinc)
     df_ASEC_hh.YEAR_survey = df_ASEC_hh.YEAR .+ 1
-
+   
     #= 
     # Potential Earnings Regression using FE package -> fast
     ols_potential_earnings_ASEC_fe = reg(df_ASEC_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
@@ -165,6 +166,7 @@ function prepare_data(sample::String)
     ACS_ASEC_inc_earned_person!(df_ACS);
 
     # Collapse at household level
+    sort!(df_ACS, [:YEAR, :SERIAL, :RELATE]);
     ACS_gdf_hh = groupby(df_ACS, [:YEAR, :SERIAL]);
     df_ACS_hh = combine(ACS_gdf_hh, nrow=>:size, :inc_earned_person => ( x -> (count(!=(0), x)) ) => :earners, :AGE=>first=>:age, :SEX=>first=>:sex, :UNITSSTR_recode=>first=>:unitsstr_recode, :RACE_recode=>first=>:race_recode, :EDUC_recode=>first=>:educ_recode, :MARST_recode=>first=>:marst_recode, :IND=>first=>:ind, :OCC=>first=>:occ, :STATENAME=>first=>:statename, :METRO=>first=>:metro, :METRO_name=>first=>:metro_name, :METAREA=>first=>:metarea, 
     :QVALUEH=>first=>:qvalueh, :STATEFIPS=>first=>:statefips,:COUNTY2_name_state_county=>first=>:county_name_state_county, :COUNTYFIPS2_recode=>first=>:county, :CITY=>first=>:city, :PUMA=>first=>:puma, :OWNERSHP=>first=>:ownershp, :HHINCOME=>first=>:hhincome, :INCWAGE=>sum=>:incwage, :INCBUS00=>sum=>:incbus00, :INCINVST=>sum=>:incinvst, :PROPTX99=>first=>:proptx99, :PROPTX99_recode=>first=>:proptx99_recode, :RENTGRS=>first=>:rentgrs, :RENT=>first=>:rent, :VALUEH=>first=>:valueh,
@@ -172,24 +174,20 @@ function prepare_data(sample::String)
     df_ACS_hh = ACS_PROPTX99_topcode_imputation!(df_ACS_hh);
 
     insertcols!(df_ACS_hh, 3, :grossinc => df_ACS_hh.incwage + df_ACS_hh.incbus00 + df_ACS_hh.incinvst);
-    filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
-    df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
+    #filter!(r -> (r[:grossinc] .> 0), df_ACS_hh); # Innocent
+    #df_ACS_hh[:, :grossinc_log] = log.(df_ACS_hh[:, :grossinc]);
     df_ACS_hh[:, :proptx_log] = log.(df_ACS_hh[:, :proptx99_recode]);
     df_ACS_hh.YEAR_survey = df_ACS_hh.YEAR .+ 1
 
-    #Impute home value for renters from Zillow data
-    df_rentgrs = CSV.read(file_rent_paid, DataFrame); # read the Zillow files
-    df_valueh = CSV.read(file_home_value, DataFrame);
-    df_annual_rentgrs_to_valueh = 12 .* df_rentgrs[:,2:end] ./ df_valueh[:,2:end];
-    insertcols!(df_annual_rentgrs_to_valueh, 1, :statename => df_rentgrs.Column1);
-    df_annual_rentgrs_to_valueh = DataFrames.stack(df_annual_rentgrs_to_valueh, Not(:statename));
-    rename!(df_annual_rentgrs_to_valueh, :variable => :YEAR, :value => :rentgrs_valueh_ratio);
-    df_annual_rentgrs_to_valueh.YEAR = convert.(Int64, parse.(Int64, df_annual_rentgrs_to_valueh.YEAR));
+    #Impute home value for renters from county- and state-level price-rent ratio data
+    df_county_prratio = CSV.read(file_county_prratio, DataFrame); 
+    df_state_prratio = CSV.read(file_state_prratio, DataFrame);
+    df_ACS_hh = leftjoin(df_ACS_hh, df_county_prratio[:,[:YEAR, :COUNTYFIPS, :price_rent_ratio_county]], on = [:YEAR_survey => :YEAR, :county => :COUNTYFIPS]);
+    df_ACS_hh = leftjoin(df_ACS_hh, df_state_prratio[:, [:YEAR, :STATENAME, :price_rent_ratio_state]], on = [:statename => :STATENAME, :YEAR_survey => :YEAR]);
+    df_ACS_hh.valueh = convert.(Float64, df_ACS_hh.valueh);
+    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (.!ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_county]
+    df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :valueh] .= df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :rentgrs] .* df_ACS_hh[(df_ACS_hh.ownershp .!= 1) .& (ismissing.(df_ACS_hh.price_rent_ratio_county)), :price_rent_ratio_state]
 
-    df_ACS_hh = leftjoin(df_ACS_hh, df_annual_rentgrs_to_valueh, on = [:statename, :YEAR_survey => :YEAR]);
-    df_ACS_hh.valueh = convert.(Float64, df_ACS_hh.valueh)
-    df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :valueh] .= 12 .* df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs] ./ df_ACS_hh[df_ACS_hh.ownershp .!= 1.0, :rentgrs_valueh_ratio]
-    
     #=
     # Potential Earnings Regression using FE package -> fast
     ols_potential_earnings_ACS_fe = reg(df_ACS_hh, @formula(grossinc_log ~ YEAR + earners + age + age^2 + sex + marst_recode + race_recode + educ_recode + ind + occ + age&educ_recode + age&occ));
