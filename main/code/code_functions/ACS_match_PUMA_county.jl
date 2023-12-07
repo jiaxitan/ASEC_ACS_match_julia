@@ -21,7 +21,8 @@ function leftjoin_by_year(df, df_PUMA_county)
 end
 
 function ACS_match_PUMA_county!(df_ACS, df_state_info)
-    
+    ## Commented codes below are for dowloading PUMA-county information from IPUMS and CB servers
+    #= 
     df_PUMA_county00 = HTTP.get("https://usa.ipums.org/usa/volii/2000PUMAsASCII.txt");
     df_PUMA_county00 = CSV.read(df_PUMA_county00.body,delim = " ",header = false, DataFrame);
     select!(df_PUMA_county00,2:6);
@@ -42,6 +43,12 @@ function ACS_match_PUMA_county!(df_ACS, df_state_info)
     end
 
     df_PUMA_county00 = parse.(Int64, df_PUMA_county00); df_PUMA_county10 = parse.(Int64, df_PUMA_county10);
+    CSV.write(dir_data * "PUMA_County_Coordination_2000.csv", df_PUMA_county00);
+    CSV.write(dir_data * "PUMA_County_Coordination_2010.csv", df_PUMA_county10); # Effective starting 2012
+    =#
+
+    df_PUMA_county00 = CSV.read(dir_data * "PUMA_County_Coordination_2000.csv", DataFrame; types = [Int64, Int64, Int64]);
+    df_PUMA_county10 = CSV.read(dir_data * "PUMA_County_Coordination_2010.csv", DataFrame; types = [Int64, Int64, Int64]); # Effective starting 2012
 
     df_PUMA_county00 = filter(r -> r.nrow == 1, combine(groupby(df_PUMA_county00, [:STATEFIPS, :PUMA]), nrow, :COUNTYFIPS2));
     df_PUMA_county10 = filter(r -> r.nrow == 1, combine(groupby(df_PUMA_county10, [:STATEFIPS, :PUMA]), nrow, :COUNTYFIPS2));
